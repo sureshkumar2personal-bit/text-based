@@ -309,3 +309,34 @@ export const allAstrologers = [
 export const platformDisputeSummary = {
   total: 8, open: 3, astrologer_reviewing: 1, escalated: 1, resolved: 2, refunded: 1
 };
+
+const raasiOptions = ['Mesha', 'Vrishabha', 'Mithuna', 'Kataka', 'Simha', 'Kanya', 'Tula', 'Vrishchika', 'Dhanus', 'Makara', 'Kumbha', 'Meena'];
+const nakshatraOptions = ['Ashwini', 'Bharani', 'Krittika', 'Rohini', 'Mrigashira', 'Ardra', 'Punarvasu', 'Pushya', 'Ashlesha', 'Magha', 'Purva Phalguni', 'Uttara Phalguni', 'Hasta', 'Chitra', 'Swati', 'Vishakha', 'Anuradha', 'Jyeshtha', 'Mula', 'Purva Ashadha', 'Uttara Ashadha', 'Shravana', 'Dhanishta', 'Shatabhisha', 'Purva Bhadrapada', 'Uttara Bhadrapada', 'Revati'];
+
+export const astrologyProfiles = [
+  {
+    id: 'ap-1', userId: 'u-1', profileName: 'Myself', relationship: 'self',
+    gender: 'female', dateOfBirth: '1994-08-15', birthTime: '06:45', birthPlace: 'Chennai, Tamil Nadu',
+    latitude: 13.0827, longitude: 80.2707, timezone: 'Asia/Kolkata',
+    rasi: 'Simha', nakshatra: 'Uttara Phalguni', pada: 3, lagna: 'Kanya',
+    isDefault: true, createdAt: new Date(now.getTime() - 90 * 86400000).toISOString()
+  },
+  {
+    id: 'ap-2', userId: 'u-1', profileName: 'My Mother', relationship: 'mother',
+    gender: 'female', dateOfBirth: '1972-03-22', birthTime: '14:20', birthPlace: 'Madurai, Tamil Nadu',
+    latitude: 9.9252, longitude: 78.1198, timezone: 'Asia/Kolkata',
+    rasi: 'Mithuna', nakshatra: 'Punarvasu', pada: 1, lagna: 'Kataka',
+    isDefault: false, createdAt: new Date(now.getTime() - 45 * 86400000).toISOString()
+  },
+  {
+    id: 'ap-3', userId: 'u-1', profileName: 'My Son', relationship: 'son',
+    gender: 'male', dateOfBirth: '2020-11-05', birthTime: '09:15', birthPlace: 'Bangalore, Karnataka',
+    latitude: 12.9716, longitude: 77.5946, timezone: 'Asia/Kolkata',
+    rasi: 'Tula', nakshatra: 'Swati', pada: 4, lagna: 'Dhanus',
+    isDefault: false, createdAt: new Date(now.getTime() - 20 * 86400000).toISOString()
+  }
+];
+
+export const raasiList = raasiOptions;
+export const nakshatraList = nakshatraOptions;
+export const relationshipOptions = ['self', 'father', 'mother', 'son', 'daughter', 'spouse', 'sibling', 'friend', 'other'];

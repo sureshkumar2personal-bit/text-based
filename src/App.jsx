@@ -12,6 +12,7 @@ import UserAskQuestion from './components/user/UserAskQuestion';
 import UserTracking from './components/user/UserTracking';
 import UserRaiseDispute from './components/user/UserRaiseDispute';
 import UserDisputeTracking from './components/user/UserDisputeTracking';
+import UserAstrologyProfiles from './components/user/UserAstrologyProfiles';
 
 import PlatformCampaigns from './components/platform/PlatformCampaigns';
 import PlatformDisputes from './components/platform/PlatformDisputes';
@@ -29,7 +30,8 @@ const TABS = {
     { id: 'ask', label: 'Ask Question' },
     { id: 'tracking', label: 'Tracking' },
     { id: 'raise-dispute', label: 'Raise Dispute' },
-    { id: 'dispute-tracking', label: 'Dispute Tracking' }
+    { id: 'dispute-tracking', label: 'Dispute Tracking' },
+    { id: 'astrology-profiles', label: 'Astrology Profiles' }
   ],
   platform: [
     { id: 'campaigns', label: 'Campaigns' },
@@ -83,6 +85,7 @@ export default function App() {
             {tab === 'tracking' && <UserTracking />}
             {tab === 'raise-dispute' && <UserRaiseDispute />}
             {tab === 'dispute-tracking' && <UserDisputeTracking />}
+            {tab === 'astrology-profiles' && <UserAstrologyProfiles />}
           </>
         )}
         {actor === 'platform' && (
