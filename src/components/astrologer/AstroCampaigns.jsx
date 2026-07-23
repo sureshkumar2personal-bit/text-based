@@ -1,10 +1,15 @@
 import { useState } from 'react';
-import { campaigns } from '../../data/mockData';
+import { useData } from '../../data/DataContext';
+import { useToast } from '../../contexts/ToastContext';
+import { useNotifications, NOTIF_TYPES } from '../../contexts/NotificationContext';
+import AnimatedCounter from '../ui/AnimatedCounter';
 
 const STATUS_MAP = { draft: 'tag-yellow', active: 'tag-green', paused: 'tag-blue', stopped: 'tag-red' };
 
 export default function AstroCampaigns() {
-  const [list, setList] = useState(campaigns);
+  const { campaigns, addCampaign, updateCampaign } = useData();
+  const toast = useToast();
+  const { addNotification } = useNotifications();
   const [showForm, setShowForm] = useState(false);
   const [edit, setEdit] = useState(null);
   const [form, setForm] = useState({ campaignName: '', description: '', price: '', totalSlots: '', submissionMode: 'text', answerMode: 'text', deadlineHours: '48', categories: '', languages: '', generalQuestionLimit: '0', individualQuestionLimit: '0', startAt: '', endAt: '' });
@@ -22,41 +27,53 @@ export default function AstroCampaigns() {
 
   const handleSave = () => {
     if (edit) {
-      setList(list.map(c => c.id === edit.id ? { ...c, ...form, price: Number(form.price), totalSlots: Number(form.totalSlots), categories: form.categories.split(',').map(s => s.trim()), languages: form.languages.split(',').map(s => s.trim()) } : c));
+      updateCampaign(edit.id, { ...form, price: Number(form.price), totalSlots: Number(form.totalSlots), categories: form.categories.split(',').map(s => s.trim()), languages: form.languages.split(',').map(s => s.trim()) });
     } else {
       const c = { id: `cmp-${Date.now()}`, astrologerId: 'a-1', campaignName: form.campaignName, campaignCode: `CMP-${Math.random().toString(36).slice(2, 8).toUpperCase()}`, description: form.description, price: Number(form.price), currency: 'INR', totalSlots: Number(form.totalSlots), soldSlots: 0, availableSlots: Number(form.totalSlots), generalQuestionLimit: Number(form.generalQuestionLimit), individualQuestionLimit: Number(form.individualQuestionLimit), submissionMode: form.submissionMode, answerMode: form.answerMode, deadlineHours: Number(form.deadlineHours), status: 'draft', categories: form.categories.split(',').map(s => s.trim()), languages: form.languages.split(',').map(s => s.trim()), startAt: form.startAt || null, endAt: form.endAt || null, createdAt: new Date().toISOString() };
-      setList([c, ...list]);
+      addCampaign(c);
     }
     setShowForm(false);
+    toast.success(edit ? 'Campaign updated!' : 'Campaign created!');
+    if (!edit) addNotification(NOTIF_TYPES.CAMPAIGN_REVIEW, 'Campaign Created', `"${form.campaignName}" submitted for platform review`);
   };
 
   const changeStatus = (id, status) => {
-    if (status === 'activate') {
-      const c = list.find(x => x.id === id);
-      if (c.price <= 0 || c.totalSlots <= 0) return alert('Cannot activate: price and totalSlots must be > 0');
-      setList(list.map(c => c.id === id ? { ...c, status: 'active', availableSlots: c.totalSlots - c.soldSlots } : c));
+    if (status === 'activate' || status === 'resume') {
+      const c = campaigns.find(x => x.id === id);
+      if (c.price <= 0 || c.totalSlots <= 0) return toast.error('Cannot activate: price and totalSlots must be > 0');
+      updateCampaign(id, { status: 'active', availableSlots: c.totalSlots - c.soldSlots });
+      toast.success(`Campaign "${c.campaignName}" is now active!`);
+      addNotification(NOTIF_TYPES.CAMPAIGN_ACTIVATED, 'Campaign Activated', `"${c.campaignName}" is now live and accepting questions`);
     } else if (status === 'pause') {
-      setList(list.map(c => c.id === id ? { ...c, status: 'paused' } : c));
+      updateCampaign(id, { status: 'paused' });
+      const c = campaigns.find(x => x.id === id);
+      toast.info(`Campaign "${c.campaignName}" paused`);
+      addNotification(NOTIF_TYPES.CAMPAIGN_PAUSED, 'Campaign Paused', `"${c.campaignName}" is paused — no new purchases`);
     } else if (status === 'stop') {
-      setList(list.map(c => c.id === id ? { ...c, status: 'stopped' } : c));
+      updateCampaign(id, { status: 'stopped' });
+      const c = campaigns.find(x => x.id === id);
+      toast.warning(`Campaign "${c.campaignName}" stopped`);
+      addNotification(NOTIF_TYPES.CAMPAIGN_STOPPED, 'Campaign Stopped', `"${c.campaignName}" has been stopped`);
     }
   };
 
-  const totalSlots = list.reduce((s, c) => s + c.totalSlots, 0);
-  const totalSold = list.reduce((s, c) => s + c.soldSlots, 0);
+  const totalSlots = campaigns.reduce((s, c) => s + c.totalSlots, 0);
+  const totalSold = campaigns.reduce((s, c) => s + c.soldSlots, 0);
 
   return (
     <div>
-      <div className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="card card-gradient-border" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h2>Question Campaigns</h2>
-          <p style={{ fontSize: '0.82rem', color: '#888' }}>{list.length} campaigns · {totalSlots} total slots · {totalSold} sold</p>
+          <h2 className="gradient-text">✨ Question Campaigns</h2>
+          <p style={{ fontSize: '0.82rem', color: '#888' }}>
+            <AnimatedCounter value={campaigns.length} /> campaigns · <AnimatedCounter value={totalSlots} /> total slots · <AnimatedCounter value={totalSold} /> sold
+          </p>
         </div>
-        <button className="btn btn-primary" onClick={openNew}>+ New Campaign</button>
+        <button className="btn btn-primary btn-glow" onClick={openNew}>+ New Campaign</button>
       </div>
 
       <div className="grid">
-        {list.map(c => {
+        {campaigns.map(c => {
           const pct = c.totalSlots > 0 ? Math.round(c.soldSlots / c.totalSlots * 100) : 0;
           return (
             <div className="card" key={c.id}>
@@ -80,7 +97,7 @@ export default function AstroCampaigns() {
                 {c.status === 'draft' && <button className="btn btn-success btn-sm" onClick={() => changeStatus(c.id, 'activate')}>Activate</button>}
                 {c.status === 'draft' && <button className="btn btn-secondary btn-sm" onClick={() => openEdit(c)}>Edit</button>}
                 {c.status === 'active' && <button className="btn btn-secondary btn-sm" onClick={() => changeStatus(c.id, 'pause')}>Pause</button>}
-                {c.status === 'paused' && <button className="btn btn-success btn-sm" onClick={() => changeStatus(c.id, 'activate')}>Resume</button>}
+                {c.status === 'paused' && <button className="btn btn-success btn-sm" onClick={() => changeStatus(c.id, 'resume')}>Resume</button>}
                 {(c.status === 'active' || c.status === 'paused') && <button className="btn btn-danger btn-sm" onClick={() => changeStatus(c.id, 'stop')}>Stop</button>}
               </div>
             </div>

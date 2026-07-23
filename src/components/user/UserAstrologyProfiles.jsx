@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { astrologyProfiles, raasiList, nakshatraList, relationshipOptions } from '../../data/mockData';
+import { useData } from '../../data/DataContext';
+import { raasiList, nakshatraList, relationshipOptions } from '../../data/mockData';
+import { useToast } from '../../contexts/ToastContext';
 
 const EMPTY_FORM = {
   profileName: '', relationship: 'self', gender: '',
@@ -9,7 +11,8 @@ const EMPTY_FORM = {
 };
 
 export default function UserAstrologyProfiles() {
-  const [profiles, setProfiles] = useState(astrologyProfiles);
+  const { astrologyProfiles, addAstrologyProfile, updateAstrologyProfile, deleteAstrologyProfile, setDefaultProfile } = useData();
+  const toast = useToast();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ ...EMPTY_FORM });
@@ -33,31 +36,32 @@ export default function UserAstrologyProfiles() {
 
   const handleSave = () => {
     if (!form.profileName || !form.dateOfBirth || !form.birthPlace || !form.rasi || !form.nakshatra)
-      return alert('Profile name, DOB, birth place, rasi and nakshatra are required.');
+      return toast.error('Profile name, DOB, birth place, rasi and nakshatra are required.');
 
     if (editing) {
-      setProfiles(profiles.map(p => p.id === editing.id ? { ...p, ...form, latitude: Number(form.latitude) || 0, longitude: Number(form.longitude) || 0, pada: Number(form.pada) } : p));
+      updateAstrologyProfile(editing.id, { ...form, latitude: Number(form.latitude) || 0, longitude: Number(form.longitude) || 0, pada: Number(form.pada) });
     } else {
       const p = {
         id: `ap-${Date.now()}`, userId: 'u-1', ...form,
         latitude: Number(form.latitude) || 0, longitude: Number(form.longitude) || 0, pada: Number(form.pada) || 1,
-        isDefault: profiles.length === 0, createdAt: new Date().toISOString()
+        isDefault: astrologyProfiles.length === 0, createdAt: new Date().toISOString()
       };
-      setProfiles([...profiles, p]);
+      addAstrologyProfile(p);
     }
     setShowForm(false);
+    toast.success(editing ? 'Profile updated!' : 'Profile created!');
   };
 
   const handleDelete = (id) => {
-    if (!confirm('Delete this profile?')) return;
-    setProfiles(profiles.filter(p => p.id !== id));
+    deleteAstrologyProfile(id);
+    toast.info('Profile deleted');
   };
 
-  const setDefault = (id) => {
-    setProfiles(profiles.map(p => ({ ...p, isDefault: p.id === id })));
+  const handleSetDefault = (id) => {
+    setDefaultProfile(id);
   };
 
-  const defaultProfile = profiles.find(p => p.isDefault);
+  const defaultProfile = astrologyProfiles.find(p => p.isDefault);
 
   return (
     <div>
@@ -65,20 +69,20 @@ export default function UserAstrologyProfiles() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h2>My Astrology Profiles</h2>
-            <p style={{ fontSize: '0.82rem', color: '#6e6573' }}>{profiles.length} profile{profiles.length !== 1 ? 's' : ''}{defaultProfile ? ` · Default: ${defaultProfile.profileName}` : ''}</p>
+            <p style={{ fontSize: '0.82rem', color: '#6e6573' }}>{astrologyProfiles.length} profile{astrologyProfiles.length !== 1 ? 's' : ''}{defaultProfile ? ` · Default: ${defaultProfile.profileName}` : ''}</p>
           </div>
           <button className="btn btn-primary" onClick={openNew}>+ New Profile</button>
         </div>
       </div>
 
-      {profiles.length === 0 && !showForm && (
+      {astrologyProfiles.length === 0 && !showForm && (
         <div className="card" style={{ textAlign: 'center', padding: '2rem' }}>
           <p style={{ color: '#817987' }}>No astrology profiles yet. Create one to use with your individual questions.</p>
         </div>
       )}
 
       <div className="grid">
-        {profiles.map(p => (
+        {astrologyProfiles.map(p => (
           <div className="card" key={p.id} style={p.isDefault ? { borderColor: '#5c3b8b' } : {}}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
@@ -105,7 +109,7 @@ export default function UserAstrologyProfiles() {
 
             <div style={{ marginTop: '0.6rem', display: 'flex', gap: '0.3rem', borderTop: '1px solid var(--line)', paddingTop: '0.6rem' }}>
               <button className="btn btn-outline btn-sm" onClick={() => openEdit(p)}>Edit</button>
-              {!p.isDefault && <button className="btn btn-secondary btn-sm" onClick={() => setDefault(p.id)}>Set Default</button>}
+              {!p.isDefault && <button className="btn btn-secondary btn-sm" onClick={() => handleSetDefault(p.id)}>Set Default</button>}
               <button className="btn btn-danger btn-sm" onClick={() => handleDelete(p.id)} style={{ marginLeft: 'auto' }}>Delete</button>
             </div>
           </div>

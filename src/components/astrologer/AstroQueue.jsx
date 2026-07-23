@@ -1,10 +1,13 @@
 import { useState } from 'react';
-import { questions, answers } from '../../data/mockData';
-
-const STATUS_MAP = { submitted: 'tag-blue', under_review: 'tag-yellow', answered: 'tag-green', disputed: 'tag-red' };
+import { useData } from '../../data/DataContext';
+import { useToast } from '../../contexts/ToastContext';
+import { useNotifications, NOTIF_TYPES } from '../../contexts/NotificationContext';
 
 export default function AstroQueue() {
-  const [queued, setQueued] = useState(questions.filter(q => q.astrologerId === 'a-1'));
+  const { questions, answers, campaigns, addAnswer, updateQuestionStatus } = useData();
+  const toast = useToast();
+  const { addNotification } = useNotifications();
+  const queued = questions.filter(q => q.astrologerId === 'a-1');
   const [filter, setFilter] = useState('all');
   const [selected, setSelected] = useState(null);
   const [answerMode, setAnswerMode] = useState('text');
@@ -12,24 +15,26 @@ export default function AstroQueue() {
   const [voiceUrl, setVoiceUrl] = useState('');
 
   const filtered = filter === 'all' ? queued : queued.filter(q => q.status === filter);
+  const allAnswers = answers;
 
   const startReview = (qId) => {
-    setQueued(queued.map(q => q.id === qId ? { ...q, status: 'under_review' } : q));
-    setSelected(queued.find(q => q.id === qId));
-    if (!queued.find(q => q.id === qId).campaignName) return;
+    updateQuestionStatus(qId, 'under_review');
     const q = queued.find(x => x.id === qId);
-    setAnswerMode(q.answerMode);
+    setSelected(q);
+    setAnswerMode(q?.answerMode || 'text');
     setAnswerText('');
     setVoiceUrl('');
   };
 
   const submitAnswer = () => {
-    if (answerMode === 'text' && !answerText) return alert('Text answer required');
-    if (answerMode === 'voice' && !voiceUrl) return alert('Voice file URL required');
-    setQueued(queued.map(q => q.id === selected.id ? { ...q, status: 'answered' } : q));
+    if (answerMode === 'text' && !answerText) return toast.error('Text answer is required');
+    if (answerMode === 'voice' && !voiceUrl) return toast.error('Voice file URL is required');
+    addAnswer(selected.id, answerMode, answerText, voiceUrl);
     setSelected(null);
     setAnswerText('');
     setVoiceUrl('');
+    toast.success('Answer submitted successfully!');
+    addNotification(NOTIF_TYPES.QUESTION_ANSWERED, 'Question Answered', `Answered "${selected.title || selected.questionText.slice(0, 40)}" for ${selected.astrologerName}`);
   };
 
   return (
@@ -47,18 +52,24 @@ export default function AstroQueue() {
 
       <div className="grid">
         {filtered.map(q => {
-          const ans = answers.find(a => a.questionId === q.id);
+          const ans = allAnswers.find(a => a.questionId === q.id);
           return (
             <div className="card" key={q.id}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span className="tag tag-blue">{q.category}</span>
-                <span className={`tag ${STATUS_MAP[q.status]}`}>{q.status}</span>
+                <span className={`tag ${q.status === 'answered' ? 'tag-green' : q.status === 'disputed' ? 'tag-red' : q.status === 'under_review' ? 'tag-yellow' : 'tag-blue'}`}>{q.status}</span>
               </div>
               <h3 style={{ marginTop: '0.5rem' }}>{q.title}</h3>
               <p style={{ fontSize: '0.8rem', color: '#aaa', margin: '0.3rem 0' }}>{q.questionText.slice(0, 100)}{q.questionText.length > 100 ? '...' : ''}</p>
               <div style={{ fontSize: '0.75rem', color: '#888' }}>
                 From: <strong>{q.astrologerName}</strong> · {q.language} · {q.questionType}
               </div>
+              {q.questionType === 'individual' && q.profile && (
+                <div style={{ marginTop: '0.3rem', fontSize: '0.72rem', color: '#5c3b8b', background: '#f3eefe', padding: '0.3rem 0.5rem', borderRadius: '6px' }}>
+                  🔮 <strong>Individual Profile:</strong> {q.profile.rasi} · {q.profile.nakshatra} · DOB: {q.profile.dateOfBirth}
+                  {q.attachments?.length > 0 && <span> · 📎 {q.attachments.length} file(s)</span>}
+                </div>
+              )}
               <div style={{ fontSize: '0.72rem', color: '#666', marginTop: '0.2rem' }}>
                 Due: {new Date(q.dueAt).toLocaleString()} · {q.campaignName}
               </div>
@@ -95,6 +106,34 @@ export default function AstroQueue() {
               <div style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.3rem' }}>
                 {selected.category} · {selected.language} · {selected.questionType}
               </div>
+              {selected.questionType === 'individual' && selected.profile && (
+                <div style={{ marginTop: '0.6rem', padding: '0.6rem', background: '#1a1535', borderRadius: '6px', border: '1px solid #5c3b8b44' }}>
+                  <p style={{ fontSize: '0.78rem', fontWeight: 600, color: '#b388ff', marginBottom: '0.3rem' }}>🔮 Personal Astrology Details</p>
+                  <div style={{ fontSize: '0.72rem', color: '#ccc', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.2rem 1rem' }}>
+                    <span>DOB: <strong style={{ color: '#ddd' }}>{selected.profile.dateOfBirth}</strong></span>
+                    <span>TOB: <strong style={{ color: '#ddd' }}>{selected.profile.birthTime || 'N/A'}</strong></span>
+                    <span>Place: <strong style={{ color: '#ddd' }}>{selected.profile.birthPlace}</strong></span>
+                    <span>Raasi: <strong style={{ color: '#ddd' }}>{selected.profile.rasi}</strong></span>
+                    <span>Nakshatra: <strong style={{ color: '#ddd' }}>{selected.profile.nakshatra}</strong></span>
+                    <span>Pada: <strong style={{ color: '#ddd' }}>{selected.profile.pada}</strong></span>
+                    <span>Lagna: <strong style={{ color: '#ddd' }}>{selected.profile.lagna || 'N/A'}</strong></span>
+                  </div>
+                  {selected.profile.horoscopeNotes && (
+                    <div style={{ marginTop: '0.4rem', paddingTop: '0.4rem', borderTop: '1px solid #5c3b8b44' }}>
+                      <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#b388ff' }}>Horoscope Notes:</span>
+                      <p style={{ fontSize: '0.72rem', color: '#aaa', marginTop: '2px' }}>{selected.profile.horoscopeNotes}</p>
+                    </div>
+                  )}
+                  {selected.attachments?.length > 0 && (
+                    <div style={{ marginTop: '0.4rem', paddingTop: '0.4rem', borderTop: '1px solid #5c3b8b44' }}>
+                      <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#b388ff' }}>Attachments:</span>
+                      {selected.attachments.map((f, i) => (
+                        <div key={i} style={{ fontSize: '0.7rem', color: '#aaa', marginTop: '2px' }}>📎 {f.name} ({(f.size / 1024).toFixed(1)} KB)</div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             <div className="form-group">
               <label>Answer Mode</label>

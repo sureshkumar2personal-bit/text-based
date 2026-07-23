@@ -1,9 +1,15 @@
-import { useState } from 'react';
-import { purchases, campaigns, astrologyProfiles as profileData, raasiList, nakshatraList } from '../../data/mockData';
+import { useState, useRef, useEffect } from 'react';
+import { useData } from '../../data/DataContext';
+import { raasiList, nakshatraList } from '../../data/mockData';
+import { useToast } from '../../contexts/ToastContext';
+import { useNotifications, NOTIF_TYPES } from '../../contexts/NotificationContext';
 
-const pendingPurchases = purchases.filter(p => p.userId === 'u-1' && p.purchaseStatus === 'question_pending' && !p.questionSubmitted);
+export default function UserAskQuestion({ onAskSuccess }) {
+  const { purchases, campaigns, astrologyProfiles, addQuestion } = useData();
+  const toast = useToast();
+  const { addNotification } = useNotifications();
+  const pendingPurchases = purchases.filter(p => p.userId === 'u-1' && p.purchaseStatus === 'question_pending' && !p.questionSubmitted);
 
-export default function UserAskQuestion() {
   const [step, setStep] = useState(pendingPurchases.length > 0 ? 'select' : 'no-purchases');
   const [selectedPur, setSelectedPur] = useState(null);
   const [form, setForm] = useState({ questionType: 'general', category: '', language: '', title: '', questionText: '' });
@@ -12,17 +18,28 @@ export default function UserAskQuestion() {
     dateOfBirth: '', birthTime: '', birthPlace: '', rasi: '', nakshatra: '', pada: 1, lagna: '',
     horoscopeNotes: '', uploadedFiles: []
   });
-
   const [submitted, setSubmitted] = useState(null);
   const [camp, setCamp] = useState(null);
-  const [profiles] = useState(profileData);
+  const uploadRef = useRef(null);
+
+  useEffect(() => {
+    const handler = e => {
+      if (uploadRef.current?.contains(e.target)) {
+        const items = Array.from(e.clipboardData?.items || []);
+        const files = items.filter(i => i.kind === 'file').map(i => i.getAsFile()).filter(Boolean);
+        if (files.length) { e.preventDefault(); setProfileForm(prev => ({...prev, uploadedFiles: [...prev.uploadedFiles, ...files]})); }
+      }
+    };
+    document.addEventListener('paste', handler);
+    return () => document.removeEventListener('paste', handler);
+  }, []);
 
   const selectPurchase = (p) => {
     setSelectedPur(p);
     const c = campaigns.find(c => c.id === p.campaignId);
     setCamp(c);
     setForm({ questionType: 'general', category: c.categories[0], language: c.languages[0], title: '', questionText: '' });
-    const def = profileData.find(pr => pr.isDefault);
+    const def = astrologyProfiles.find(pr => pr.isDefault);
     if (def) {
       setProfileForm({
         dateOfBirth: def.dateOfBirth, birthTime: def.birthTime, birthPlace: def.birthPlace,
@@ -38,29 +55,40 @@ export default function UserAskQuestion() {
   const isIndividual = form.questionType === 'individual';
 
   const handleSubmit = () => {
-    if (!form.questionText && !form.title) return alert('Question text required');
-    if (!form.category) return alert('Category required');
-    if (!form.language) return alert('Language required');
+    if (!form.questionText && !form.title) return toast.error('Question text is required');
+    if (!form.category) return toast.error('Please select a category');
+    if (!form.language) return toast.error('Please select a language');
 
     if (isIndividual) {
-      if (!profileForm.dateOfBirth) return alert('Date of Birth is required for individual questions');
-      if (!profileForm.birthPlace) return alert('Place of Birth is required for individual questions');
-      if (!profileForm.rasi) return alert('Raasi (Moon Sign) is required for individual questions');
-      if (!profileForm.nakshatra) return alert('Nakshatra is required for individual questions');
+      if (!profileForm.dateOfBirth) return toast.error('Date of Birth is required for individual questions');
+      if (!profileForm.birthPlace) return toast.error('Place of Birth is required for individual questions');
+      if (!profileForm.rasi) return toast.error('Raasi (Moon Sign) is required for individual questions');
+      if (!profileForm.nakshatra) return toast.error('Nakshatra is required for individual questions');
     }
 
-    const attachments = profileForm.uploadedFiles.map(f => ({ name: f.name, type: f.type, size: f.size }));
+    const q = addQuestion({
+      campaignId: camp.id, purchaseId: selectedPur.id,
+      questionType: form.questionType, category: form.category, language: form.language,
+      title: form.title, questionText: form.questionText,
+      deadlineHours: camp.deadlineHours, campaignName: camp.campaignName, answerMode: camp.answerMode,
+      profile: isIndividual ? { ...profileForm, uploadedFiles: undefined } : null,
+      attachments: isIndividual && profileForm.uploadedFiles.length > 0 ? profileForm.uploadedFiles.map(f => ({ name: f.name, type: f.type, size: f.size })) : [],
+    });
+
     setTimeout(() => {
       setSubmitted({
         ...form,
         profile: isIndividual ? { ...profileForm, uploadedFiles: undefined } : null,
-        attachments: isIndividual && profileForm.uploadedFiles.length > 0 ? attachments : [],
+        attachments: isIndividual && profileForm.uploadedFiles.length > 0 ? profileForm.uploadedFiles.map(f => ({ name: f.name, type: f.type, size: f.size })) : [],
         purchase: selectedPur, campaign: camp,
-        questionCode: `Q-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
+        questionCode: q.questionCode,
         submittedAt: new Date().toISOString()
       });
       setStep('done');
-    }, 1000);
+      toast.success('Question submitted successfully!', 4000);
+      addNotification(NOTIF_TYPES.QUESTION_SUBMITTED, 'Question Submitted', `"${q.title || q.questionText.slice(0, 40)}" — awaiting astrologer answer`);
+      if (onAskSuccess) onAskSuccess();
+    }, 500);
   };
 
   if (step === 'no-purchases') {
@@ -106,7 +134,7 @@ export default function UserAskQuestion() {
           )}
           <div>Due: {new Date(Date.now() + (submitted.campaign.deadlineHours || 48) * 3600000).toLocaleString()}</div>
         </div>
-        <p style={{ fontSize: '0.82rem', color: '#817987' }}>Track your question status in the "Tracking" tab.</p>
+        <p style={{ fontSize: '0.82rem', color: '#817987' }}>Track your question status in the "Tracking" tab. It also appears in the astrologer's queue.</p>
         <button className="btn btn-primary" style={{ marginTop: '0.5rem' }} onClick={() => { setStep('select'); setSubmitted(null); }}>Ask Another</button>
       </div>
     );
@@ -182,10 +210,10 @@ export default function UserAskQuestion() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.8rem' }}>
                 <span style={{ fontSize: '1.2rem' }}>🔮</span>
                 <h3 style={{ margin: 0, color: '#5c3b8b' }}>Personal Astrology Details</h3>
-                {profiles.length > 0 && (
+                {astrologyProfiles.length > 0 && (
                   <span style={{ fontSize: '0.72rem', color: '#817987', marginLeft: 'auto' }}>
                     <button className="btn btn-sm btn-outline" type="button" onClick={() => {
-                      const def = profiles.find(p => p.isDefault) || profiles[0];
+                      const def = astrologyProfiles.find(p => p.isDefault) || astrologyProfiles[0];
                       if (def) setProfileForm({
                         dateOfBirth: def.dateOfBirth, birthTime: def.birthTime, birthPlace: def.birthPlace,
                         rasi: def.rasi, nakshatra: def.nakshatra, pada: def.pada, lagna: def.lagna,
@@ -248,18 +276,22 @@ export default function UserAskQuestion() {
                   <h4 style={{ margin: 0, fontSize: '0.85rem', color: '#5c3b8b' }}>Horoscope / Chart Details</h4>
                 </div>
                 <div className="form-group">
-                  <label>Horoscope Notes (planet positions, house details, etc.)</label>
+                  <label>Horoscope Notes</label>
                   <textarea rows={3} value={profileForm.horoscopeNotes} onChange={e => setProfileForm({...profileForm, horoscopeNotes: e.target.value})}
-                    placeholder="e.g. Jupiter in 7th house, Saturn retrograde in 10th, Moon in Rohini nakshatra..." />
+                    placeholder="e.g. Jupiter in 7th house, Saturn retrograde in 10th..." />
                 </div>
               </div>
 
               <div style={{ marginTop: '0.8rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
                   <span style={{ fontSize: '1rem' }}>📎</span>
-                  <h4 style={{ margin: 0, fontSize: '0.85rem', color: '#5c3b8b' }}>Upload Horoscope / Documents</h4>
+                  <h4 style={{ margin: 0, fontSize: '0.85rem', color: '#5c3b8b' }}>Upload Documents</h4>
                 </div>
-                <div style={{ background: '#fff', border: '2px dashed var(--line)', borderRadius: '8px', padding: '1rem', textAlign: 'center' }}>
+                <div ref={uploadRef}
+                  style={{ background: '#fff', border: '2px dashed var(--line)', borderRadius: '8px', padding: '1rem', textAlign: 'center', cursor: 'pointer', transition: 'border-color 0.2s, background 0.2s' }}
+                  onDragOver={e => { e.preventDefault(); e.currentTarget.style.borderColor = '#5c3b8b'; e.currentTarget.style.background = '#f3eefe'; }}
+                  onDragLeave={e => { e.currentTarget.style.borderColor = 'var(--line)'; e.currentTarget.style.background = '#fff'; }}
+                  onDrop={e => { e.preventDefault(); e.currentTarget.style.borderColor = 'var(--line)'; e.currentTarget.style.background = '#fff'; const files = Array.from(e.dataTransfer.files); if (files.length) setProfileForm({...profileForm, uploadedFiles: [...profileForm.uploadedFiles, ...files]}); }}>
                   <input type="file" id="file-upload" multiple style={{ display: 'none' }}
                     onChange={e => {
                       const files = Array.from(e.target.files);
@@ -269,8 +301,11 @@ export default function UserAskQuestion() {
                   <label htmlFor="file-upload" style={{ cursor: 'pointer', display: 'block' }}>
                     <div style={{ fontSize: '2rem', marginBottom: '0.3rem' }}>📤</div>
                     <span style={{ color: '#5c3b8b', fontWeight: 600, fontSize: '0.85rem' }}>Click to upload</span>
-                    <div style={{ fontSize: '0.72rem', color: '#817987', marginTop: '0.2rem' }}>Horoscope images, PDF charts (max 5MB each)</div>
+                    <div style={{ fontSize: '0.72rem', color: '#817987', marginTop: '0.2rem' }}>Images, PDFs (max 5MB each)</div>
                   </label>
+                  <div style={{ fontSize: '0.72rem', color: '#817987', marginTop: '0.4rem', borderTop: '1px dashed var(--line)', paddingTop: '0.4rem' }}>
+                    or drag & drop files here, or paste from clipboard
+                  </div>
                 </div>
                 {profileForm.uploadedFiles.length > 0 && (
                   <div style={{ marginTop: '0.5rem' }}>

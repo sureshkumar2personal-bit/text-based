@@ -1,10 +1,8 @@
 import { useState } from 'react';
-import { purchases, questions, answers } from '../../data/mockData';
-
-const PURCHASE_STATUS_MAP = { question_pending: 'tag-yellow', question_submitted: 'tag-blue', answered: 'tag-green', disputed: 'tag-red', refunded: 'tag-gray' };
-const QUESTION_STATUS_MAP = { submitted: 'tag-blue', under_review: 'tag-yellow', answered: 'tag-green', disputed: 'tag-red' };
+import { useData } from '../../data/DataContext';
 
 export default function UserQuestions() {
+  const { purchases, questions, answers } = useData();
   const myPurchases = purchases.filter(p => p.userId === 'u-1');
   const myQuestions = questions.filter(q => q.userId === 'u-1');
   const [tab, setTab] = useState('purchases');
@@ -24,7 +22,7 @@ export default function UserQuestions() {
             <div className="card" key={p.id}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <h3>{p.campaignName}</h3>
-                <span className={`tag ${PURCHASE_STATUS_MAP[p.purchaseStatus] || 'tag-gray'}`}>{p.purchaseStatus}</span>
+                <span className={`tag ${p.purchaseStatus === 'question_pending' ? 'tag-yellow' : p.purchaseStatus === 'question_submitted' ? 'tag-blue' : p.purchaseStatus === 'answered' ? 'tag-green' : 'tag-gray'}`}>{p.purchaseStatus}</span>
               </div>
               <div className="row" style={{ marginTop: '0.4rem' }}>
                 <div><span style={{ color: '#888' }}>Price</span><br />₹{p.price}</div>
@@ -47,7 +45,7 @@ export default function UserQuestions() {
               <div className="card" key={q.id}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <h3>{q.title}</h3>
-                  <span className={`tag ${QUESTION_STATUS_MAP[q.status] || 'tag-gray'}`}>{q.status}</span>
+                  <span className={`tag ${q.status === 'answered' ? 'tag-green' : q.status === 'disputed' ? 'tag-red' : q.status === 'submitted' ? 'tag-blue' : 'tag-yellow'}`}>{q.status}</span>
                 </div>
                 <p style={{ fontSize: '0.8rem', color: '#aaa', margin: '0.3rem 0' }}>{q.questionText.slice(0, 80)}{q.questionText.length > 80 ? '...' : ''}</p>
                 <div style={{ fontSize: '0.75rem', color: '#888' }}>

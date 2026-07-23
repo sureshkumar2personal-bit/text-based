@@ -1,54 +1,56 @@
-import { useState } from 'react';
-import { disputes, disputeMessages, platformDisputeSummary, wallet } from '../../data/mockData';
+import { useState, useMemo } from 'react';
+import { useData } from '../../data/DataContext';
+import { useToast } from '../../contexts/ToastContext';
+import { useNotifications, NOTIF_TYPES } from '../../contexts/NotificationContext';
 
 const STATUS_MAP = { open: 'tag-red', astrologer_reviewing: 'tag-yellow', astrologer_responded: 'tag-blue', user_reply: 'tag-purple', escalated: 'tag-red', platform_reviewing: 'tag-purple', resolved: 'tag-green', refunded: 'tag-green', rejected: 'tag-gray', closed: 'tag-gray' };
 
 export default function PlatformDisputes() {
-  const [list, setList] = useState(disputes);
+  const { disputes, disputeMessages, updateDisputeStatus, addDisputeMessage } = useData();
+  const toast = useToast();
+  const { addNotification } = useNotifications();
   const [selected, setSelected] = useState(null);
   const [adminNotes, setAdminNotes] = useState('');
   const [refundAmount, setRefundAmount] = useState('');
   const [resolution, setResolution] = useState('');
-  const [messages, setMessages] = useState(disputeMessages);
   const [newMsg, setNewMsg] = useState('');
-  const [summary] = useState(platformDisputeSummary);
+
+  const summary = useMemo(() => ({
+    total: disputes.length,
+    open: disputes.filter(d => d.status === 'open').length,
+    astrologer_reviewing: disputes.filter(d => d.status === 'astrologer_reviewing').length,
+    escalated: disputes.filter(d => d.status === 'escalated').length,
+    resolved: disputes.filter(d => d.status === 'resolved').length,
+    refunded: disputes.filter(d => d.status === 'refunded').length,
+    rejected: disputes.filter(d => d.status === 'rejected').length,
+    closed: disputes.filter(d => d.status === 'closed').length,
+  }), [disputes]);
 
   const resolveDispute = () => {
-    if (!resolution) return alert('Select a resolution');
-    if (resolution === 'refunded' && !refundAmount) return alert('Enter refund amount');
+    if (!resolution) return toast.error('Select a resolution');
+    if (resolution === 'refunded' && !refundAmount) return toast.error('Enter refund amount');
 
     const refundAmt = resolution === 'refunded' ? Number(refundAmount) : 0;
-    setList(list.map(d => d.id === selected.id ? {
-      ...d, status: resolution, resolution, adminNotes: adminNotes || null,
-      resolvedBy: 'adm-1', resolvedAt: new Date().toISOString(), refundAmount: refundAmt
-    } : d));
-
-    setMessages([...messages, {
-      id: `dm-${Date.now()}`, disputeId: selected.id,       senderType: 'platform', senderId: 'adm-1',
-      senderName: 'Platform',
-      message: `Dispute ${resolution} by platform.${adminNotes ? ' Note: ' + adminNotes : ''}${refundAmt ? ' Refund: ₹' + refundAmt : ''}`,
-      createdAt: new Date().toISOString()
-    }]);
+    updateDisputeStatus(selected.id, { status: resolution, resolution, adminNotes: adminNotes || null, resolvedBy: 'adm-1', resolvedAt: new Date().toISOString(), refundAmount: refundAmt });
+    addDisputeMessage(selected.id, 'platform', 'adm-1', 'Platform', `Dispute ${resolution} by platform.${adminNotes ? ' Note: ' + adminNotes : ''}${refundAmt ? ' Refund: ₹' + refundAmt : ''}`);
 
     setSelected(null);
     setAdminNotes('');
     setRefundAmount('');
     setResolution('');
+    toast.success(`Dispute ${resolution} by platform.`);
+    addNotification(NOTIF_TYPES.DISPUTE_RESOLVED, 'Dispute Resolved', `Dispute #${selected.questionCode} resolved as "${resolution}"`);
   };
 
   const sendMessage = () => {
     if (!newMsg.trim()) return;
-    setMessages([...messages, {
-      id: `adm-msg-${Date.now()}`, disputeId: selected.id,       senderType: 'platform', senderId: 'adm-1',
-      senderName: 'Platform', message: newMsg.trim(),
-      createdAt: new Date().toISOString()
-    }]);
+    addDisputeMessage(selected.id, 'platform', 'adm-1', 'Platform', newMsg.trim());
     setNewMsg('');
   };
 
   const getFiltered = (status) => {
-    if (status === 'all') return list;
-    return list.filter(d => d.status === status);
+    if (status === 'all') return disputes;
+    return disputes.filter(d => d.status === status);
   };
 
   const [filter, setFilter] = useState('all');
@@ -68,7 +70,7 @@ export default function PlatformDisputes() {
         <div style={{ display: 'flex', gap: '0.3rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
           {['all', 'open', 'escalated', 'astrologer_reviewing', 'platform_reviewing', 'resolved', 'refunded', 'rejected'].map(s => (
             <button key={s} className={`btn btn-sm ${filter === s ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setFilter(s)}>
-              {s.replace('_', ' ')} ({s === 'all' ? list.length : list.filter(d => d.status === s).length})
+              {s.replace('_', ' ')} ({s === 'all' ? disputes.length : disputes.filter(d => d.status === s).length})
             </button>
           ))}
         </div>
@@ -129,7 +131,7 @@ export default function PlatformDisputes() {
             </div>
 
             <div className="msg-thread">
-              {messages.filter(m => m.disputeId === selected.id).map(m => (
+              {disputeMessages.filter(m => m.disputeId === selected.id).map(m => (
                 <div key={m.id} className={`msg ${m.senderType}`}>
                   <div className="sender">{m.senderName} ({m.senderType})</div>
                   {m.message}

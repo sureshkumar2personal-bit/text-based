@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { questions, answers } from '../../data/mockData';
+import { useData } from '../../data/DataContext';
+import { useToast } from '../../contexts/ToastContext';
+import { useNotifications, NOTIF_TYPES } from '../../contexts/NotificationContext';
 
 const DISPUTE_REASONS = [
   { value: 'incomplete_answer', label: 'Incomplete Answer' },
@@ -13,6 +15,9 @@ const DISPUTE_REASONS = [
 ];
 
 export default function UserRaiseDispute() {
+  const { questions, answers, purchases, addDispute } = useData();
+  const toast = useToast();
+  const { addNotification } = useNotifications();
   const answeredQuestions = questions.filter(q => q.userId === 'u-1' && q.status === 'answered');
   const [selected, setSelected] = useState(null);
   const [reason, setReason] = useState('');
@@ -21,12 +26,24 @@ export default function UserRaiseDispute() {
   const [raised, setRaised] = useState(null);
 
   const handleRaise = () => {
-    if (!reason) return alert('Please select a reason');
-    if (!description.trim()) return alert('Please describe your issue');
+    if (!reason) return toast.error('Please select a reason');
+    if (!description.trim()) return toast.error('Please describe your issue');
+
+    const purchase = purchases.find(p => p.questionId === selected.id);
+    addDispute({
+      questionId: selected.id, purchaseId: purchase?.id,
+      reason, description,
+      expectedResolution: expectation,
+      questionCode: selected.questionCode, questionTitle: selected.title,
+      questionText: selected.questionText,
+      purchaseAmount: purchase?.price || 0,
+    });
 
     setTimeout(() => {
       setRaised({ question: selected, reason, description, expectation, createdAt: new Date().toISOString(), disputeId: `disp-${Date.now()}` });
-    }, 800);
+      toast.success('Dispute raised successfully!');
+      addNotification(NOTIF_TYPES.DISPUTE_RAISED, 'Dispute Raised', `Dispute on "${selected.title}" — ${reason.replace(/_/g, ' ')}`);
+    }, 300);
   };
 
   if (raised) {
@@ -40,7 +57,7 @@ export default function UserRaiseDispute() {
           <div>Reason: {raised.reason.replace('_', ' ')}</div>
           <div>Status: <span className="tag tag-red">open</span></div>
         </div>
-        <p style={{ fontSize: '0.82rem', color: '#666' }}>Track your dispute status in the "Dispute Tracking" tab.</p>
+        <p style={{ fontSize: '0.82rem', color: '#666' }}>Track your dispute status in the "Dispute Tracking" tab. The astrologer has been notified.</p>
         <button className="btn btn-primary" style={{ marginTop: '0.5rem' }} onClick={() => { setRaised(null); setSelected(null); setReason(''); setDescription(''); }}>Raise Another</button>
       </div>
     );

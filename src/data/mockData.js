@@ -136,7 +136,9 @@ export const questions = [
     status: 'under_review', submittedAt: new Date(now.getTime() - 1 * 86400000).toISOString(),
     dueAt: new Date(now.getTime() + 2 * 86400000).toISOString(),
     campaignName: 'Love & Relationship Answers', answerMode: 'voice',
-    astrologerName: 'Dr. Arjun Nair'
+    astrologerName: 'Dr. Arjun Nair',
+    profile: { dateOfBirth: '1995-06-15', birthTime: '14:30', birthPlace: 'Mumbai, Maharashtra', rasi: 'Kanya', nakshatra: 'Uttara Phalguni', pada: 3, lagna: 'Mithuna', horoscopeNotes: 'Shani mahadasha running until 2027. Guru in 7th house indicates delay in marriage but positive outcome after Jupiter transit.' },
+    attachments: [{ name: 'birth_chart.jpg', type: 'image/jpeg', size: 245760 }, { name: 'horoscope_notes.pdf', type: 'application/pdf', size: 512000 }]
   },
   {
     id: 'q-3', userId: 'u-1', astrologerId: 'a-1', campaignId: 'cmp-3', purchaseId: 'pur-4',
@@ -340,3 +342,46 @@ export const astrologyProfiles = [
 export const raasiList = raasiOptions;
 export const nakshatraList = nakshatraOptions;
 export const relationshipOptions = ['self', 'father', 'mother', 'son', 'daughter', 'spouse', 'sibling', 'friend', 'other'];
+
+export const ratings = [
+  { id: 'rat-1', questionId: 'q-1', userId: 'u-1', astrologerId: 'a-1', score: 4, feedback: 'Detailed and helpful analysis of my chart.', createdAt: new Date(now.getTime() - 1 * 86400000).toISOString(), questionTitle: 'Investment timing', astrologerName: 'Dr. Arjun Nair' }
+];
+
+export const astrologerSettings = {
+  id: 'as-1', astrologerId: 'a-1', displayName: 'Dr. Arjun Nair',
+  title: 'Vedic Astrologer', bio: 'Over 15 years of experience in Vedic astrology, numerology, and vastu. I provide personalized guidance based on your birth chart with practical remedies.',
+  profilePhoto: null, experienceYears: 15, specialties: ['Vedic Astrology', 'Numerology', 'Vastu', 'Muhurtha'],
+  consultationLanguages: ['English', 'Hindi', 'Tamil', 'Malayalam'],
+  maxDailyQuestions: 20, autoAcceptQuestions: true, instantAnswerEnabled: false,
+  notificationPreferences: { email: true, sms: false, push: true },
+  bankAccount: { accountHolder: 'Arjun Nair', bankName: 'State Bank of India', accountNumber: 'XXXX-XXXX-4521', ifsc: 'SBIN00XXXX' },
+  updatedAt: new Date(now.getTime() - 10 * 86400000).toISOString()
+};
+
+export const platformStats = {
+  totalUsers: 2847, totalAstrologers: 46, totalQuestionsAsked: 12580, totalQuestionsAnswered: 11240,
+  totalRevenue: 1845900, totalCommissionCollected: 369180, averageResolutionTimeHours: 18.5,
+  activeCampaigns: 38, pendingReviews: 5, openDisputes: 3,
+  monthlyRevenue: [
+    { month: 'Jan', revenue: 240000, questions: 1800 },
+    { month: 'Feb', revenue: 285000, questions: 2100 },
+    { month: 'Mar', revenue: 310000, questions: 2300 },
+    { month: 'Apr', revenue: 365000, questions: 2600 },
+    { month: 'May', revenue: 398000, questions: 2900 },
+    { month: 'Jun', revenue: 247900, questions: 1880 }
+  ],
+  topAstrologers: [
+    { id: 'a-1', name: 'Dr. Arjun Nair', revenue: 45820, rating: 4.5, questionsAnswered: 520 },
+    { id: 'a-2', name: 'Lakshmi Devi', revenue: 28700, rating: 4.8, questionsAnswered: 380 },
+    { id: 'a-3', name: 'Rajesh Kumar', revenue: 19300, rating: 4.2, questionsAnswered: 245 }
+  ]
+};
+
+export const followUpQuestions = [
+  {
+    id: 'fuq-1', questionId: 'q-1', userId: 'u-1', astrologerId: 'a-1',
+    followUpText: 'Thank you for the detailed answer. Could you suggest specific remedies or gemstones that would strengthen the beneficial planetary positions you mentioned?',
+    status: 'submitted', submittedAt: new Date(now.getTime() - 12 * 3600000).toISOString(),
+    originalQuestionTitle: 'Investment timing', astrologerName: 'Dr. Arjun Nair'
+  }
+];

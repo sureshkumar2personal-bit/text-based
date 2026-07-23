@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { disputes, disputeMessages } from '../../data/mockData';
+import { useData } from '../../data/DataContext';
+import { useNotifications, NOTIF_TYPES } from '../../contexts/NotificationContext';
 
 const DISPUTE_TIMELINE_STAGES = [
   'Dispute Raised',
@@ -24,19 +25,15 @@ function getDisputeTimeline(status) {
 const DISPUTE_STATUS_MAP = { open: 'tag-red', astrologer_reviewing: 'tag-yellow', astrologer_responded: 'tag-blue', user_reply: 'tag-purple', escalated: 'tag-red', platform_reviewing: 'tag-purple', resolved: 'tag-green', refunded: 'tag-green', rejected: 'tag-gray', closed: 'tag-gray' };
 
 export default function UserDisputeTracking() {
+  const { disputes, disputeMessages, addDisputeMessage, updateDisputeStatus } = useData();
+  const { addNotification } = useNotifications();
   const myDisputes = disputes.filter(d => d.userId === 'u-1');
   const [selected, setSelected] = useState(null);
   const [newMsg, setNewMsg] = useState('');
-  const [messages, setMessages] = useState(disputeMessages);
 
   const sendMessage = () => {
     if (!newMsg.trim()) return;
-    const msg = {
-      id: `dm-${Date.now()}`, disputeId: selected.id, senderType: 'user', senderId: 'u-1',
-      senderName: 'Priya Sharma', message: newMsg.trim(),
-      createdAt: new Date().toISOString()
-    };
-    setMessages([...messages, msg]);
+    addDisputeMessage(selected.id, 'user', 'u-1', 'Priya Sharma', newMsg.trim());
     setNewMsg('');
   };
 
@@ -117,7 +114,7 @@ export default function UserDisputeTracking() {
             </div>
 
             <div className="msg-thread">
-              {messages.filter(m => m.disputeId === selected.id).map(m => (
+              {disputeMessages.filter(m => m.disputeId === selected.id).map(m => (
                 <div key={m.id} className={`msg ${m.senderType}`}>
                   <div className="sender">{m.senderName} ({m.senderType})</div>
                   {m.message}
@@ -136,7 +133,11 @@ export default function UserDisputeTracking() {
 
             <div className="modal-actions">
               {selected.status !== 'escalated' && !['resolved', 'refunded', 'rejected', 'closed'].includes(selected.status) && (
-                <button className="btn btn-danger btn-sm">Escalate to Platform</button>
+                <button className="btn btn-danger btn-sm" onClick={() => {
+                  addDisputeMessage(selected.id, 'platform', 'adm-1', 'System', 'User escalated this dispute to platform review.');
+                  updateDisputeStatus(selected.id, { status: 'escalated', escalatedAt: new Date().toISOString(), escalatedBy: 'u-1' });
+                  addNotification(NOTIF_TYPES.DISPUTE_ESCALATED, 'Dispute Escalated', `Dispute #${selected.questionCode} sent to platform review`);
+                }}>Escalate to Platform</button>
               )}
               <button className="btn btn-secondary" onClick={() => setSelected(null)}>Close</button>
             </div>

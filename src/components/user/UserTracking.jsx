@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { questions, answers } from '../../data/mockData';
+import { useData } from '../../data/DataContext';
 
 const TIMELINE_STAGES = ['Purchased', 'Question Submitted', 'Received by Astrologer', 'Under Review', 'Answered'];
 const STATUS_ORDER = ['question_pending', 'submitted', 'received_by_astrologer', 'under_review', 'answered', 'completed'];
@@ -10,6 +10,7 @@ function getTimeline(status) {
 }
 
 export default function UserTracking() {
+  const { questions, answers } = useData();
   const myQuestions = questions.filter(q => q.userId === 'u-1');
   const [selected, setSelected] = useState(null);
 
@@ -53,7 +54,7 @@ export default function UserTracking() {
         <div className="modal-overlay" onClick={() => setSelected(null)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <h2>Question Details</h2>
-            <div style={{ background: '#12102a', padding: '1rem', borderRadius: '8px', marginBottom: '0.8rem' }}>
+            <div className="card" style={{ padding: '1rem', marginBottom: '0.8rem' }}>
               <div className="row" style={{ marginBottom: '0.5rem' }}>
                 <div><span style={{ color: '#888' }}>Code</span><br />{selected.questionCode}</div>
                 <div><span style={{ color: '#888' }}>Campaign</span><br />{selected.campaignName}</div>
@@ -66,7 +67,7 @@ export default function UserTracking() {
               </div>
             </div>
 
-            <div style={{ background: '#12102a', padding: '1rem', borderRadius: '8px', marginBottom: '0.8rem' }}>
+            <div className="card" style={{ padding: '1rem', marginBottom: '0.8rem' }}>
               <h3 style={{ fontSize: '0.85rem', marginBottom: '0.3rem' }}>Question</h3>
               <p style={{ fontSize: '0.85rem' }}>{selected.questionText}</p>
             </div>
@@ -85,12 +86,12 @@ export default function UserTracking() {
             {(() => {
               const ans = answers.find(a => a.questionId === selected.id);
               return ans ? (
-                <div style={{ background: '#16382a', padding: '1rem', borderRadius: '8px', marginTop: '0.5rem' }}>
+                <div className="card" style={{ padding: '1rem', marginTop: '0.5rem', borderLeft: '3px solid var(--purple)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
-                    <span style={{ fontWeight: 500 }}>Answer ({ans.answerMode})</span>
+                    <span style={{ fontWeight: 500, color: 'var(--purple)' }}>Answer ({ans.answerMode})</span>
                     <span style={{ fontSize: '0.72rem', color: '#888' }}>{new Date(ans.submittedAt).toLocaleString()}</span>
                   </div>
-                  <p style={{ fontSize: '0.85rem', color: '#ddd' }}>{ans.answerText}</p>
+                  <p style={{ fontSize: '0.85rem' }}>{ans.answerText}</p>
                 </div>
               ) : <p style={{ color: '#666', fontStyle: 'italic', marginTop: '0.5rem' }}>Answer pending — due by {new Date(selected.dueAt).toLocaleString()}</p>;
             })()}

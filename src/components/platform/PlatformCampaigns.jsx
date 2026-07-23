@@ -1,27 +1,46 @@
 import { useState } from 'react';
-import { platformCampaigns, allAstrologers } from '../../data/mockData';
+import { useData } from '../../data/DataContext';
+import { allAstrologers } from '../../data/mockData';
+import { useToast } from '../../contexts/ToastContext';
+import { useNotifications, NOTIF_TYPES } from '../../contexts/NotificationContext';
 
 const APPROVAL_MAP = { pending_review: 'tag-yellow', approved: 'tag-green', rejected: 'tag-red', not_submitted: 'tag-gray' };
 
 export default function PlatformCampaigns() {
-  const [list, setList] = useState(platformCampaigns);
+  const { platformCampaigns, updatePlatformCampaign, campaigns, updateCampaign } = useData();
+  const toast = useToast();
+  const { addNotification } = useNotifications();
   const [selected, setSelected] = useState(null);
   const [rejectReason, setRejectReason] = useState('');
 
   const approve = (id) => {
-    setList(list.map(c => c.id === id ? { ...c, approvalStatus: 'approved', status: 'active', reviewedAt: new Date().toISOString(), reviewedBy: 'adm-1' } : c));
+    updatePlatformCampaign(id, { approvalStatus: 'approved', status: 'active', reviewedAt: new Date().toISOString(), reviewedBy: 'adm-1' });
+    const pCamp = platformCampaigns.find(c => c.id === id);
+    if (pCamp) {
+      const existing = campaigns.find(c => c.id === id);
+      if (existing) updateCampaign(id, { status: 'active' });
+    }
     setSelected(null);
   };
 
   const reject = () => {
-    if (!rejectReason.trim()) return alert('Please provide a rejection reason');
-    setList(list.map(c => c.id === selected.id ? { ...c, approvalStatus: 'rejected', rejectionReason: rejectReason, reviewedAt: new Date().toISOString(), reviewedBy: 'adm-1' } : c));
+    if (!rejectReason.trim()) return toast.error('Please provide a rejection reason');
+    updatePlatformCampaign(selected.id, { approvalStatus: 'rejected', rejectionReason: rejectReason, reviewedAt: new Date().toISOString(), reviewedBy: 'adm-1' });
     setSelected(null);
     setRejectReason('');
+    toast.warning('Campaign rejected');
+    addNotification(NOTIF_TYPES.CAMPAIGN_REJECTED, 'Campaign Rejected', `"${selected.campaignName}" was rejected. Reason: ${rejectReason}`);
   };
 
-  const pendingCount = list.filter(c => c.approvalStatus === 'pending_review').length;
-  const approvedCount = list.filter(c => c.approvalStatus === 'approved').length;
+  const doApprove = (id) => {
+    approve(id);
+    toast.success('Campaign approved and published!');
+    const c = platformCampaigns.find(x => x.id === id);
+    addNotification(NOTIF_TYPES.CAMPAIGN_APPROVED, 'Campaign Approved', `"${c?.campaignName || id}" approved and is now live`);
+  };
+
+  const pendingCount = platformCampaigns.filter(c => c.approvalStatus === 'pending_review').length;
+  const approvedCount = platformCampaigns.filter(c => c.approvalStatus === 'approved').length;
 
   return (
     <div>
@@ -36,7 +55,7 @@ export default function PlatformCampaigns() {
       </div>
 
       <div className="grid">
-        {list.map(c => (
+        {platformCampaigns.map(c => (
           <div className="card" key={c.id}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <h3>{c.campaignName}</h3>
@@ -98,7 +117,7 @@ export default function PlatformCampaigns() {
             <div className="modal-actions">
               <button className="btn btn-secondary" onClick={() => setSelected(null)}>Cancel</button>
               <button className="btn btn-danger" onClick={reject} disabled={!rejectReason.trim()}>Reject</button>
-              <button className="btn btn-success" onClick={() => approve(selected.id)}>Approve & Publish</button>
+              <button className="btn btn-success" onClick={() => doApprove(selected.id)}>Approve & Publish</button>
             </div>
           </div>
         </div>

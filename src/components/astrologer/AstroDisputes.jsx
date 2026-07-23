@@ -1,32 +1,40 @@
 import { useState } from 'react';
-import { disputes, disputeMessages } from '../../data/mockData';
+import { useData } from '../../data/DataContext';
+import { useToast } from '../../contexts/ToastContext';
+import { useNotifications, NOTIF_TYPES } from '../../contexts/NotificationContext';
 
 const STATUS_MAP = { open: 'tag-red', astrologer_reviewing: 'tag-yellow', astrologer_responded: 'tag-blue', user_reply: 'tag-purple', escalated: 'tag-red', platform_reviewing: 'tag-purple', resolved: 'tag-green', refunded: 'tag-green', rejected: 'tag-gray', closed: 'tag-gray' };
 
 export default function AstroDisputes() {
-  const [list, setList] = useState(disputes.filter(d => d.astrologerId === 'a-1'));
+  const { disputes, disputeMessages, updateDisputeStatus, addDisputeMessage } = useData();
+  const toast = useToast();
+  const { addNotification } = useNotifications();
+  const myDisputes = disputes.filter(d => d.astrologerId === 'a-1');
   const [selected, setSelected] = useState(null);
   const [response, setResponse] = useState('');
 
   const markReviewing = (id) => {
-    setList(list.map(d => d.id === id ? { ...d, status: 'astrologer_reviewing' } : d));
+    updateDisputeStatus(id, { status: 'astrologer_reviewing' });
   };
 
   const submitResponse = () => {
-    if (!response.trim()) return alert('Response text required');
-    setList(list.map(d => d.id === selected.id ? { ...d, status: 'astrologer_responded', astrologerResponse: response, astrologerRespondedAt: new Date().toISOString() } : d));
+    if (!response.trim()) return toast.error('Response text is required');
+    addDisputeMessage(selected.id, 'astrologer', 'a-1', 'Dr. Arjun Nair', response.trim());
+    updateDisputeStatus(selected.id, { status: 'astrologer_responded', astrologerResponse: response, astrologerRespondedAt: new Date().toISOString() });
     setResponse('');
     setSelected(null);
+    toast.success('Response submitted!');
+    addNotification(NOTIF_TYPES.DISPUTE_RAISED, 'Dispute Response Sent', `You responded to dispute #${selected.questionCode}`);
   };
 
   return (
     <div>
       <div className="card">
-        <h2>Disputes ({list.length})</h2>
+        <h2>Disputes ({myDisputes.length})</h2>
       </div>
 
       <div className="grid">
-        {list.map(d => (
+        {myDisputes.map(d => (
           <div className="card" key={d.id}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <h3>#{d.questionCode}</h3>
