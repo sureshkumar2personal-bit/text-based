@@ -35,17 +35,20 @@ export function NotificationProvider({ children }) {
     try { localStorage.setItem('ae_notifications', JSON.stringify(n)); } catch {}
   };
 
-  const addNotification = useCallback((type, title, message, link) => {
-    const n = {
+  const addNotification = useCallback((type, title, message, targetRole, navigateTo) => {
+    const roles = Array.isArray(targetRole) ? targetRole : [targetRole];
+    const newNotifs = roles.map(role => ({
       id: ++notifId,
       type,
       icon: NOTIF_TYPES[type]?.icon || '🔔',
       color: NOTIF_TYPES[type]?.color || '#888',
-      title, message, link, read: false,
+      title, message, read: false,
       createdAt: new Date().toISOString(),
-    };
+      targetRole: role,
+      navigateTo: navigateTo || null,
+    }));
     setNotifications(prev => {
-      const next = [n, ...prev];
+      const next = [...newNotifs, ...prev];
       persist(next);
       return next;
     });
@@ -72,10 +75,8 @@ export function NotificationProvider({ children }) {
     persist([]);
   }, []);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
-
   return (
-    <NotificationContext.Provider value={{ notifications, unreadCount, addNotification, markRead, markAllRead, clearAll }}>
+    <NotificationContext.Provider value={{ notifications, markRead, markAllRead, clearAll, addNotification }}>
       {children}
     </NotificationContext.Provider>
   );

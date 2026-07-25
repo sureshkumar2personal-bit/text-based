@@ -2,10 +2,10 @@ import { useData } from '../../data/DataContext';
 import AnimatedCounter from '../ui/AnimatedCounter';
 
 export default function PlatformDashboard() {
-  const { platformStats, disputes, platformCampaigns, purchases } = useData();
+  const { platformStats, disputes, campaigns, purchases } = useData();
 
   const stats = platformStats;
-  const pendingReviewCount = platformCampaigns.filter(c => c.approvalStatus === 'pending_review').length;
+  const activeCampaigns = campaigns.filter(c => c.status === 'active').length;
   const totalPurchases = purchases.length;
   const openDisputes = disputes.filter(d => ['open', 'escalated', 'astrologer_reviewing', 'platform_reviewing', 'user_reply'].includes(d.status)).length;
 
@@ -14,8 +14,8 @@ export default function PlatformDashboard() {
     { label: 'Total Astrologers', value: stats.totalAstrologers, color: 'var(--purple)', icon: '⭐' },
     { label: 'Questions Asked', value: stats.totalQuestionsAsked, color: '#f9a826', icon: '📝' },
     { label: 'Revenue (₹)', value: stats.totalRevenue, color: '#4ade80', icon: '💰', prefix: '₹' },
-    { label: 'Active Campaigns', value: stats.activeCampaigns, color: '#34d399', icon: '📢' },
-    { label: 'Pending Reviews', value: pendingReviewCount, color: '#f87171', icon: '⏳' },
+    { label: 'Active Campaigns', value: activeCampaigns, color: '#34d399', icon: '📢' },
+    { label: 'Total Purchases', value: totalPurchases, color: '#60a5fa', icon: '🛒' },
     { label: 'Open Disputes', value: openDisputes, color: '#c084fc', icon: '⚖️' },
     { label: 'Avg Resolution', value: stats.averageResolutionTimeHours, color: '#e879f9', icon: '⏱️', suffix: 'hrs', decimals: 1 },
   ];
@@ -24,7 +24,7 @@ export default function PlatformDashboard() {
     <div>
       <div className="card card-gradient-border">
         <h2 className="gradient-text">🏛️ Platform Dashboard</h2>
-        <p style={{ fontSize: '0.82rem', color: '#888' }}>Real-time platform overview</p>
+        <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Real-time platform overview</p>
       </div>
 
       <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
@@ -34,7 +34,7 @@ export default function PlatformDashboard() {
             <div style={{ fontSize: '1.5rem', fontWeight: 700, color: m.color }}>
               {m.prefix || ''}<AnimatedCounter value={m.value} decimals={m.decimals || 0} />{m.suffix || ''}
             </div>
-            <div style={{ fontSize: '0.72rem', color: '#888' }}>{m.label}</div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{m.label}</div>
           </div>
         ))}
       </div>
@@ -53,7 +53,7 @@ export default function PlatformDashboard() {
                     <div className="chart-bar-fill" style={{ width: `${pct}%`, background: i === stats.monthlyRevenue.length - 1 ? 'var(--purple)' : '#60a5fa' }} />
                   </div>
                   <span className="chart-bar-value">₹{(m.revenue / 1000).toFixed(1)}k</span>
-                  <span style={{ fontSize: '0.68rem', color: '#888' }}>({m.questions} Qs)</span>
+                  <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>({m.questions} Qs)</span>
                 </div>
               );
             })}
@@ -66,10 +66,10 @@ export default function PlatformDashboard() {
             {stats.topAstrologers.map((a, i) => (
               <div key={a.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0', borderBottom: '1px solid var(--line)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span style={{ fontWeight: 700, color: '#888' }}>#{i + 1}</span>
+                  <span style={{ fontWeight: 700, color: 'var(--text-muted)' }}>#{i + 1}</span>
                   <div>
                     <div style={{ fontWeight: 500, fontSize: '0.82rem' }}>{a.name}</div>
-                    <div style={{ fontSize: '0.68rem', color: '#888' }}>{a.rating} ⭐ · {a.questionsAnswered} answered</div>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{a.rating} ⭐ · {a.questionsAnswered} answered</div>
                   </div>
                 </div>
                 <div style={{ fontWeight: 600, color: '#4ade80' }}>₹{a.revenue.toLocaleString()}</div>

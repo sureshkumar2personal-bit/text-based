@@ -5,14 +5,18 @@ import { useToast } from '../../contexts/ToastContext';
 const SPECIALTIES = ['Vedic Astrology', 'Numerology', 'Vastu', 'Muhurtha', 'Palmistry', 'Tarot', 'Prashna', 'Gemstone Advisory'];
 const LANGUAGES = ['English', 'Hindi', 'Tamil', 'Telugu', 'Malayalam', 'Kannada', 'Marathi', 'Gujarati', 'Bengali'];
 
-export default function AstroProfile() {
-  const { astroSettings, updateAstroSettings } = useData();
+import { defaultAstrologerSettings } from '../../data/mockData';
+
+export default function AstroProfile({ astrologerId }) {
+  const { astroSettingsMap, updateAstroSettings, allAstrologers } = useData();
   const toast = useToast();
+  const settings = (astroSettingsMap && astroSettingsMap[astrologerId]) || defaultAstrologerSettings;
+  const astroInfo = allAstrologers && allAstrologers.find(a => a.id === astrologerId);
   const [edit, setEdit] = useState(false);
-  const [form, setForm] = useState({ ...astroSettings });
+  const [form, setForm] = useState({ ...settings });
 
   const handleSave = () => {
-    updateAstroSettings({
+    updateAstroSettings(astrologerId, {
       displayName: form.displayName, title: form.title, bio: form.bio,
       experienceYears: Number(form.experienceYears),
       specialties: form.specialties, consultationLanguages: form.consultationLanguages,
@@ -33,8 +37,8 @@ export default function AstroProfile() {
       <div className="card card-gradient-border">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <h2 className="gradient-text">⭐ Astrologer Profile</h2>
-            <p style={{ fontSize: '0.82rem', color: '#888', marginTop: '0.2rem' }}>{astroSettings.displayName} · {astroSettings.title}</p>
+            <h2 className="gradient-text">⭐ {settings.displayName}</h2>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>{settings.title} · Rating: {astroInfo?.rating || '4.5'} ⭐</p>
           </div>
           <button className={`btn ${edit ? 'btn-success' : 'btn-primary'}`} onClick={() => edit ? handleSave() : setEdit(true)}>
             {edit ? 'Save Changes' : 'Edit Profile'}
@@ -90,22 +94,22 @@ export default function AstroProfile() {
           ) : (
             <>
               <div style={{ marginTop: '0.5rem' }}>
-                <p style={{ fontSize: '0.85rem', lineHeight: 1.6, color: '#888' }}>{astroSettings.bio}</p>
+                <p style={{ fontSize: '0.85rem', lineHeight: 1.6, color: 'var(--text-muted)' }}>{settings.bio}</p>
                 <div style={{ marginTop: '0.8rem' }}>
-                  <div className="stat-pill">🎂 {astroSettings.experienceYears} years experience</div>
-                  <div className="stat-pill" style={{ marginLeft: '0.3rem' }}>📅 {astroSettings.maxDailyQuestions} questions/day</div>
+                  <div className="stat-pill">🎂 {settings.experienceYears} years experience</div>
+                  <div className="stat-pill" style={{ marginLeft: '0.3rem' }}>📅 {settings.maxDailyQuestions} questions/day</div>
                 </div>
               </div>
               <div style={{ marginTop: '0.8rem' }}>
-                <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.3rem' }}>Specialties</div>
+                <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.3rem' }}>Specialties</div>
                 <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap' }}>
-                  {astroSettings.specialties.map(s => <span key={s} className="tag tag-blue">{s}</span>)}
+                  {settings.specialties.map(s => <span key={s} className="tag tag-blue">{s}</span>)}
                 </div>
               </div>
               <div style={{ marginTop: '0.5rem' }}>
-                <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.3rem' }}>Languages</div>
+                <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.3rem' }}>Languages</div>
                 <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap' }}>
-                  {astroSettings.consultationLanguages.map(l => <span key={l} className="tag tag-purple">{l}</span>)}
+                  {settings.consultationLanguages.map(l => <span key={l} className="tag tag-purple">{l}</span>)}
                 </div>
               </div>
             </>
@@ -145,23 +149,23 @@ export default function AstroProfile() {
           ) : (
             <>
               <div style={{ marginTop: '0.5rem' }}>
-                <div className="stat-pill">📧 Email: {astroSettings.notificationPreferences.email ? '✅' : '❌'}</div>
-                <div className="stat-pill" style={{ marginLeft: '0.3rem' }}>📱 SMS: {astroSettings.notificationPreferences.sms ? '✅' : '❌'}</div>
-                <div className="stat-pill" style={{ marginLeft: '0.3rem' }}>🔔 Push: {astroSettings.notificationPreferences.push ? '✅' : '❌'}</div>
+                <div className="stat-pill">📧 Email: {settings.notificationPreferences.email ? '✅' : '❌'}</div>
+                <div className="stat-pill" style={{ marginLeft: '0.3rem' }}>📱 SMS: {settings.notificationPreferences.sms ? '✅' : '❌'}</div>
+                <div className="stat-pill" style={{ marginLeft: '0.3rem' }}>🔔 Push: {settings.notificationPreferences.push ? '✅' : '❌'}</div>
               </div>
               <hr className="section-divider" />
               <h3>Bank Account (for payouts)</h3>
               <div style={{ fontSize: '0.82rem', marginTop: '0.3rem' }}>
-                <div><span style={{ color: '#888' }}>Holder:</span> {astroSettings.bankAccount.accountHolder}</div>
-                <div><span style={{ color: '#888' }}>Bank:</span> {astroSettings.bankAccount.bankName}</div>
-                <div><span style={{ color: '#888' }}>Account:</span> {astroSettings.bankAccount.accountNumber}</div>
-                <div><span style={{ color: '#888' }}>IFSC:</span> {astroSettings.bankAccount.ifsc}</div>
+                <div><span style={{ color: 'var(--text-muted)' }}>Holder:</span> {settings.bankAccount.accountHolder}</div>
+                <div><span style={{ color: 'var(--text-muted)' }}>Bank:</span> {settings.bankAccount.bankName}</div>
+                <div><span style={{ color: 'var(--text-muted)' }}>Account:</span> {settings.bankAccount.accountNumber}</div>
+                <div><span style={{ color: 'var(--text-muted)' }}>IFSC:</span> {settings.bankAccount.ifsc}</div>
               </div>
               <hr className="section-divider" />
               <h3>Quick Stats</h3>
               <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.3rem', flexWrap: 'wrap' }}>
-                <div className="stat-pill">⭐ Rating: {astroSettings.rating || 4.5}</div>
-                <div className="stat-pill">📋 {astroSettings.reviewCount || 128} reviews</div>
+                <div className="stat-pill">⭐ Rating: {astroInfo?.rating || 4.5}</div>
+                <div className="stat-pill">📋 {astroInfo?.reviewCount || 0} reviews</div>
               </div>
             </>
           )}

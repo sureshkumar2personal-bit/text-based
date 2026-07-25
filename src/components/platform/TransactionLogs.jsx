@@ -68,9 +68,9 @@ export default function TransactionLogs() {
                   <span className={t.type === 'credit' ? 'value-up' : 'value-down'} style={{ fontWeight: 600 }}>
                     {t.type === 'credit' ? '+' : '-'}₹{t.amount}
                   </span>
-                  <span style={{ color: '#888', marginLeft: '0.3rem' }}>{t.description}</span>
+                  <span style={{ color: 'var(--text-muted)', marginLeft: '0.3rem' }}>{t.description}</span>
                 </div>
-                <span style={{ color: '#888', fontSize: '0.7rem' }}>
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>
                   <span className={`tag ${t.status === 'completed' ? 'tag-green' : 'tag-yellow'}`}>{t.status}</span>
                   {' '}{new Date(t.createdAt).toLocaleDateString()}
                 </span>

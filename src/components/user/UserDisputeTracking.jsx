@@ -50,8 +50,8 @@ export default function UserDisputeTracking() {
                 <h3>#{d.questionCode} — {d.questionTitle}</h3>
                 <span className={`tag ${DISPUTE_STATUS_MAP[d.status]}`}>{d.status}</span>
               </div>
-              <p style={{ fontSize: '0.78rem', color: '#aaa' }}>Reason: {d.reason.replace(/_/g, ' ')}</p>
-              <p style={{ fontSize: '0.75rem', color: '#888' }}>{d.description}</p>
+              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Reason: {d.reason.replace(/_/g, ' ')}</p>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{d.description}</p>
 
               <div className="status-bar" style={{ flexWrap: 'wrap', gap: '0.3rem' }}>
                 {tl.map((s, i) => (
@@ -85,9 +85,9 @@ export default function UserDisputeTracking() {
               <span className={`tag ${DISPUTE_STATUS_MAP[selected.status]}`}>{selected.status}</span>
             </div>
 
-            <div style={{ background: '#12102a', padding: '0.6rem', borderRadius: '6px', marginBottom: '0.8rem' }}>
+            <div style={{ background: 'var(--bg-elevated)', color: 'var(--text-on-elevated)', padding: '0.6rem', borderRadius: '6px', marginBottom: '0.8rem' }}>
               <p><strong>{selected.questionTitle}</strong> — {selected.reason.replace(/_/g, ' ')}</p>
-              <p style={{ fontSize: '0.78rem', color: '#aaa' }}>{selected.description}</p>
+              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{selected.description}</p>
               {selected.astrologerResponse && (
                 <div style={{ marginTop: '0.3rem', padding: '0.3rem', borderTop: '1px solid #2a2948' }}>
                   <span className="tag tag-blue" style={{ marginBottom: '2px' }}>Astrologer's Response</span>
@@ -136,7 +136,7 @@ export default function UserDisputeTracking() {
                 <button className="btn btn-danger btn-sm" onClick={() => {
                   addDisputeMessage(selected.id, 'platform', 'adm-1', 'System', 'User escalated this dispute to platform review.');
                   updateDisputeStatus(selected.id, { status: 'escalated', escalatedAt: new Date().toISOString(), escalatedBy: 'u-1' });
-                  addNotification(NOTIF_TYPES.DISPUTE_ESCALATED, 'Dispute Escalated', `Dispute #${selected.questionCode} sent to platform review`);
+                  addNotification(NOTIF_TYPES.DISPUTE_ESCALATED, 'Dispute Escalated', `Dispute #${selected.questionCode} sent to platform review`, 'platform', { tab: 'disputes' });
                 }}>Escalate to Platform</button>
               )}
               <button className="btn btn-secondary" onClick={() => setSelected(null)}>Close</button>

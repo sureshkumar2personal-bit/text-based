@@ -9,45 +9,52 @@ function getTimeline(status) {
   return TIMELINE_STAGES.map((label, i) => ({ label, completed: i <= Math.min(idx, STATUS_ORDER.length - 1) }));
 }
 
-export default function UserTracking() {
+export default function UserTracking({ filter, onNavigate }) {
   const { questions, answers } = useData();
   const myQuestions = questions.filter(q => q.userId === 'u-1');
+  const filtered = filter === 'pending'
+    ? myQuestions.filter(q => ['submitted', 'under_review', 'received_by_astrologer'].includes(q.status))
+    : myQuestions;
   const [selected, setSelected] = useState(null);
 
   return (
     <div>
-      <div className="card"><h2>Question Tracking</h2></div>
+      <div className="card"><h2>Question Tracking</h2>{filter && <span style={{ fontSize: '0.72rem', color: '#a88bd0', marginLeft: '0.5rem', fontStyle: 'italic' }}>({filter === 'pending' ? 'Pending only' : 'All questions'})</span>}</div>
 
       <div className="grid">
-        {myQuestions.map(q => (
-          <div className="card" key={q.id}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <h3>{q.title || q.questionCode}</h3>
-              <span className={`tag ${q.status === 'answered' || q.status === 'completed' ? 'tag-green' : q.status === 'disputed' ? 'tag-red' : 'tag-yellow'}`}>{q.status}</span>
+        {filtered.length === 0
+          ? <div className="card" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+              {filter === 'pending' ? 'No pending questions to track.' : 'No questions yet.'}
             </div>
-            <p style={{ fontSize: '0.78rem', color: '#888', margin: '0.3rem 0' }}>{q.questionText.slice(0, 60)}...</p>
-            <div style={{ fontSize: '0.72rem', color: '#666' }}>
-              {q.category} · {q.language} · Astrologer: {q.astrologerName}
-            </div>
+          : filtered.map(q => (
+            <div className="card" key={q.id}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <h3>{q.title || q.questionCode}</h3>
+                <span className={`tag ${q.status === 'answered' || q.status === 'completed' ? 'tag-green' : q.status === 'disputed' ? 'tag-red' : 'tag-yellow'}`}>{q.status}</span>
+              </div>
+              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '0.3rem 0' }}>{q.questionText.slice(0, 60)}...</p>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                {q.category} · {q.language} · Astrologer: {q.astrologerName}
+              </div>
 
-            <div className="status-bar">
-              {getTimeline(q.status).map((s, i, arr) => (
-                <span key={s.label}>
-                  <span className={`stage ${s.completed && i === arr.length - 1 ? 'completed' : s.completed && i < arr.length - 1 ? 'completed' : ''} ${q.status === 'under_review' && s.label === 'Under Review' ? 'active' : ''}`}>
-                    <span className="stage-dot" /> {s.label}
+              <div className="status-bar">
+                {getTimeline(q.status).map((s, i, arr) => (
+                  <span key={s.label}>
+                    <span className={`stage ${s.completed && i === arr.length - 1 ? 'completed' : s.completed && i < arr.length - 1 ? 'completed' : ''} ${q.status === 'under_review' && s.label === 'Under Review' ? 'active' : ''}`}>
+                      <span className="stage-dot" /> {s.label}
+                    </span>
+                    {i < arr.length - 1 && <span className="stage-line" />}
                   </span>
-                  {i < arr.length - 1 && <span className="stage-line" />}
-                </span>
-              ))}
-            </div>
+                ))}
+              </div>
 
-            <div style={{ fontSize: '0.7rem', color: '#555', marginTop: '0.2rem' }}>
-              Submitted: {new Date(q.submittedAt).toLocaleString()} · Due: {new Date(q.dueAt).toLocaleString()}
-            </div>
+              <div style={{ fontSize: '0.7rem', color: '#555', marginTop: '0.2rem' }}>
+                Submitted: {new Date(q.submittedAt).toLocaleString()} · Due: {new Date(q.dueAt).toLocaleString()}
+              </div>
 
-            <button className="btn btn-secondary btn-sm" style={{ marginTop: '0.3rem' }} onClick={() => setSelected(q)}>View Details</button>
-          </div>
-        ))}
+              <button className="btn btn-secondary btn-sm" style={{ marginTop: '0.3rem' }} onClick={() => setSelected(q)}>View Details</button>
+            </div>
+          ))}
       </div>
 
       {selected && (
@@ -56,14 +63,14 @@ export default function UserTracking() {
             <h2>Question Details</h2>
             <div className="card" style={{ padding: '1rem', marginBottom: '0.8rem' }}>
               <div className="row" style={{ marginBottom: '0.5rem' }}>
-                <div><span style={{ color: '#888' }}>Code</span><br />{selected.questionCode}</div>
-                <div><span style={{ color: '#888' }}>Campaign</span><br />{selected.campaignName}</div>
-                <div><span style={{ color: '#888' }}>Status</span><br /><span className={`tag ${selected.status === 'answered' ? 'tag-green' : 'tag-yellow'}`}>{selected.status}</span></div>
+                <div><span style={{ color: 'var(--text-muted)' }}>Code</span><br />{selected.questionCode}</div>
+                <div><span style={{ color: 'var(--text-muted)' }}>Campaign</span><br />{selected.campaignName}</div>
+                <div><span style={{ color: 'var(--text-muted)' }}>Status</span><br /><span className={`tag ${selected.status === 'answered' ? 'tag-green' : 'tag-yellow'}`}>{selected.status}</span></div>
               </div>
               <div className="row">
-                <div><span style={{ color: '#888' }}>Category</span><br />{selected.category}</div>
-                <div><span style={{ color: '#888' }}>Language</span><br />{selected.language}</div>
-                <div><span style={{ color: '#888' }}>Type</span><br />{selected.questionType}</div>
+                <div><span style={{ color: 'var(--text-muted)' }}>Category</span><br />{selected.category}</div>
+                <div><span style={{ color: 'var(--text-muted)' }}>Language</span><br />{selected.language}</div>
+                <div><span style={{ color: 'var(--text-muted)' }}>Type</span><br />{selected.questionType}</div>
               </div>
             </div>
 
@@ -89,14 +96,19 @@ export default function UserTracking() {
                 <div className="card" style={{ padding: '1rem', marginTop: '0.5rem', borderLeft: '3px solid var(--purple)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
                     <span style={{ fontWeight: 500, color: 'var(--purple)' }}>Answer ({ans.answerMode})</span>
-                    <span style={{ fontSize: '0.72rem', color: '#888' }}>{new Date(ans.submittedAt).toLocaleString()}</span>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{new Date(ans.submittedAt).toLocaleString()}</span>
                   </div>
                   <p style={{ fontSize: '0.85rem' }}>{ans.answerText}</p>
                 </div>
-              ) : <p style={{ color: '#666', fontStyle: 'italic', marginTop: '0.5rem' }}>Answer pending — due by {new Date(selected.dueAt).toLocaleString()}</p>;
+              ) : <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', marginTop: '0.5rem' }}>Answer pending — due by {new Date(selected.dueAt).toLocaleString()}</p>;
             })()}
 
             <div className="modal-actions">
+              {selected.status === 'answered' && (
+                <button className="btn btn-danger" onClick={() => { onNavigate?.('raise-dispute', null, selected.id); setSelected(null); }}>
+                  ⚖️ Raise Dispute
+                </button>
+              )}
               <button className="btn btn-secondary" onClick={() => setSelected(null)}>Close</button>
             </div>
           </div>

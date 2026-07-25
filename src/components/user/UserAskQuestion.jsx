@@ -4,15 +4,15 @@ import { raasiList, nakshatraList } from '../../data/mockData';
 import { useToast } from '../../contexts/ToastContext';
 import { useNotifications, NOTIF_TYPES } from '../../contexts/NotificationContext';
 
-export default function UserAskQuestion({ onAskSuccess }) {
+export default function UserAskQuestion({ onAskSuccess, preselectId }) {
   const { purchases, campaigns, astrologyProfiles, addQuestion } = useData();
   const toast = useToast();
   const { addNotification } = useNotifications();
   const pendingPurchases = purchases.filter(p => p.userId === 'u-1' && p.purchaseStatus === 'question_pending' && !p.questionSubmitted);
 
-  const [step, setStep] = useState(pendingPurchases.length > 0 ? 'select' : 'no-purchases');
+  const [step, setStep] = useState('select');
   const [selectedPur, setSelectedPur] = useState(null);
-  const [form, setForm] = useState({ questionType: 'general', category: '', language: '', title: '', questionText: '' });
+  const [form, setForm] = useState({ questionType: 'general', category: '', language: '', questionText: '' });
 
   const [profileForm, setProfileForm] = useState({
     dateOfBirth: '', birthTime: '', birthPlace: '', rasi: '', nakshatra: '', pada: 1, lagna: '',
@@ -38,7 +38,7 @@ export default function UserAskQuestion({ onAskSuccess }) {
     setSelectedPur(p);
     const c = campaigns.find(c => c.id === p.campaignId);
     setCamp(c);
-    setForm({ questionType: 'general', category: c.categories[0], language: c.languages[0], title: '', questionText: '' });
+    setForm({ questionType: p.variation || 'general', category: c.categories[0], language: c.languages[0], questionText: '' });
     const def = astrologyProfiles.find(pr => pr.isDefault);
     if (def) {
       setProfileForm({
@@ -52,10 +52,21 @@ export default function UserAskQuestion({ onAskSuccess }) {
     setStep('form');
   };
 
+  useEffect(() => {
+    if (preselectId) {
+      const found = pendingPurchases.find(p => p.id === preselectId);
+      if (found) {
+        selectPurchase(found);
+      }
+    } else if (pendingPurchases.length === 0) {
+      setStep('no-purchases');
+    }
+  }, [preselectId]);
+
   const isIndividual = form.questionType === 'individual';
 
   const handleSubmit = () => {
-    if (!form.questionText && !form.title) return toast.error('Question text is required');
+    if (!form.questionText) return toast.error('Question text is required');
     if (!form.category) return toast.error('Please select a category');
     if (!form.language) return toast.error('Please select a language');
 
@@ -69,7 +80,7 @@ export default function UserAskQuestion({ onAskSuccess }) {
     const q = addQuestion({
       campaignId: camp.id, purchaseId: selectedPur.id,
       questionType: form.questionType, category: form.category, language: form.language,
-      title: form.title, questionText: form.questionText,
+      title: form.questionText.slice(0, 50), questionText: form.questionText,
       deadlineHours: camp.deadlineHours, campaignName: camp.campaignName, answerMode: camp.answerMode,
       profile: isIndividual ? { ...profileForm, uploadedFiles: undefined } : null,
       attachments: isIndividual && profileForm.uploadedFiles.length > 0 ? profileForm.uploadedFiles.map(f => ({ name: f.name, type: f.type, size: f.size })) : [],
@@ -86,7 +97,7 @@ export default function UserAskQuestion({ onAskSuccess }) {
       });
       setStep('done');
       toast.success('Question submitted successfully!', 4000);
-      addNotification(NOTIF_TYPES.QUESTION_SUBMITTED, 'Question Submitted', `"${q.title || q.questionText.slice(0, 40)}" — awaiting astrologer answer`);
+      addNotification(NOTIF_TYPES.QUESTION_SUBMITTED, 'New Question', `"${q.title || q.questionText.slice(0, 40)}" submitted by user`, 'astrologer', { tab: 'queue' });
       if (onAskSuccess) onAskSuccess();
     }, 500);
   };
@@ -96,7 +107,7 @@ export default function UserAskQuestion({ onAskSuccess }) {
       <div className="card" style={{ textAlign: 'center', padding: '2rem' }}>
         <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>📋</div>
         <h2>No Purchases Available</h2>
-        <p style={{ color: '#6e6573' }}>You need to purchase a question slot first. Go to the "Purchase" tab.</p>
+        <p style={{ color: 'var(--text-muted)' }}>You need to purchase a question slot first. Go to the "Purchase" tab.</p>
       </div>
     );
   }
@@ -106,35 +117,35 @@ export default function UserAskQuestion({ onAskSuccess }) {
       <div className="card" style={{ textAlign: 'center', padding: '2rem' }}>
         <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>📨</div>
         <h2>Question Submitted!</h2>
-        <div style={{ background: '#f9f6f1', padding: '1rem', borderRadius: '8px', display: 'inline-block', textAlign: 'left', margin: '0.5rem 0' }}>
+        <div style={{ background: 'var(--pale)', padding: '1rem', borderRadius: '8px', display: 'inline-block', textAlign: 'left', margin: '0.5rem 0' }}>
           <div>Code: <strong>{submitted.questionCode}</strong></div>
           <div>Campaign: <strong>{submitted.campaign.campaignName}</strong></div>
           <div>Category: {submitted.category} · Language: {submitted.language}</div>
           <div>Type: <strong>{submitted.questionType}</strong></div>
           {submitted.profile && (
             <div style={{ marginTop: '0.3rem', paddingTop: '0.3rem', borderTop: '1px solid var(--line)' }}>
-              <div style={{ color: '#5c3b8b', fontWeight: 600, fontSize: '0.78rem' }}>Attached Profile:</div>
+              <div style={{ color: 'var(--purple)', fontWeight: 600, fontSize: '0.78rem' }}>Attached Profile:</div>
               <div>DOB: {submitted.profile.dateOfBirth} · TOB: {submitted.profile.birthTime}</div>
               <div>Raasi: {submitted.profile.rasi} · Nakshatra: {submitted.profile.nakshatra}</div>
               {submitted.profile.horoscopeNotes && (
                 <div style={{ marginTop: '0.3rem' }}>
-                  <span style={{ fontWeight: 600, color: '#5c3b8b' }}>Horoscope:</span>
-                  <p style={{ fontSize: '0.8rem', color: '#6e6573', marginTop: '2px' }}>{submitted.profile.horoscopeNotes}</p>
+                  <span style={{ fontWeight: 600, color: 'var(--purple)' }}>Horoscope:</span>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>{submitted.profile.horoscopeNotes}</p>
                 </div>
               )}
             </div>
           )}
           {submitted.attachments && submitted.attachments.length > 0 && (
             <div style={{ marginTop: '0.3rem' }}>
-              <span style={{ fontWeight: 600, color: '#5c3b8b', fontSize: '0.78rem' }}>Attachments:</span>
+              <span style={{ fontWeight: 600, color: 'var(--purple)', fontSize: '0.78rem' }}>Attachments:</span>
               {submitted.attachments.map((f, i) => (
-                <div key={i} style={{ fontSize: '0.75rem', color: '#6e6573' }}>📎 {f.name} ({(f.size / 1024).toFixed(1)} KB)</div>
+                <div key={i} style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>📎 {f.name} ({(f.size / 1024).toFixed(1)} KB)</div>
               ))}
             </div>
           )}
           <div>Due: {new Date(Date.now() + (submitted.campaign.deadlineHours || 48) * 3600000).toLocaleString()}</div>
         </div>
-        <p style={{ fontSize: '0.82rem', color: '#817987' }}>Track your question status in the "Tracking" tab. It also appears in the astrologer's queue.</p>
+        <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Track your question status in the "Tracking" tab. It also appears in the astrologer's queue.</p>
         <button className="btn btn-primary" style={{ marginTop: '0.5rem' }} onClick={() => { setStep('select'); setSubmitted(null); }}>Ask Another</button>
       </div>
     );
@@ -144,16 +155,17 @@ export default function UserAskQuestion({ onAskSuccess }) {
     <div>
       {step === 'select' && (
         <>
-          <div className="card"><h2>Select a Purchase</h2><p style={{ fontSize: '0.82rem', color: '#6e6573' }}>Choose a campaign slot to submit your question for.</p></div>
+          <div className="card"><h2>Select a Purchase</h2><p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Choose a campaign slot to submit your question for.</p></div>
           <div className="grid">
             {pendingPurchases.map(p => (
               <div className="card" key={p.id}>
-                <h3>{p.campaignName}</h3>
-                <div className="row" style={{ marginTop: '0.4rem' }}>
-                  <div><span style={{ color: '#817987' }}>Price</span><br />₹{p.price}</div>
-                  <div><span style={{ color: '#817987' }}>Code</span><br />{p.purchaseCode}</div>
-                  <div><span style={{ color: '#817987' }}>Answer</span><br />{p.answerMode}</div>
-                </div>
+<h3>{p.campaignName}</h3>
+                  <div className="row" style={{ marginTop: '0.4rem' }}>
+                    <div><span style={{ color: 'var(--text-muted)' }}>Price</span><br />₹{p.price}</div>
+                    <div><span style={{ color: 'var(--text-muted)' }}>Code</span><br />{p.purchaseCode}</div>
+                    <div><span style={{ color: 'var(--text-muted)' }}>Type</span><br /><span className="tag tag-purple">{p.variation}</span></div>
+                    <div><span style={{ color: 'var(--text-muted)' }}>Answer</span><br />{p.answerMode}</div>
+                  </div>
                 <button className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }} onClick={() => selectPurchase(p)}>Use This Slot</button>
               </div>
             ))}
@@ -164,17 +176,16 @@ export default function UserAskQuestion({ onAskSuccess }) {
       {step === 'form' && (
         <div className="card">
           <h2>Submit Question</h2>
-          <p style={{ fontSize: '0.82rem', color: '#6e6573', marginBottom: '1rem' }}>
+          <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
             Campaign: <strong>{selectedPur.campaignName}</strong> · Answer mode: <strong>{camp.answerMode}</strong>
           </p>
 
           <div className="row">
             <div className="form-group">
               <label>Question Type</label>
-              <select value={form.questionType} onChange={e => setForm({...form, questionType: e.target.value})}>
-                <option value="general">General (no personal details)</option>
-                <option value="individual">Individual (with astrology profile)</option>
-              </select>
+              <div style={{ padding: '0.5rem 0.75rem', background: '#f3eefe', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600, color: 'var(--purple)' }}>
+                {selectedPur.variation === 'individual' ? '🔮 Individual (Personalized)' : '📝 General (No personal details)'}
+              </div>
             </div>
             <div className="form-group">
               <label>Category</label>
@@ -191,12 +202,9 @@ export default function UserAskQuestion({ onAskSuccess }) {
           </div>
 
           <div className="form-group">
-            <label>Title (optional)</label>
-            <input value={form.title} onChange={e => setForm({...form, title: e.target.value})} placeholder="e.g. Investment timing question" />
-          </div>
-          <div className="form-group">
-            <label>Your Question</label>
-            <textarea rows={5} value={form.questionText} onChange={e => setForm({...form, questionText: e.target.value})} placeholder="Describe your question in detail..." />
+            <label>Your Question (max 400 characters)</label>
+            <textarea rows={5} maxLength={400} value={form.questionText} onChange={e => setForm({...form, questionText: e.target.value})} placeholder="Describe your question in detail..." />
+            <div style={{ fontSize: '0.7rem', color: form.questionText.length > 350 ? '#f87171' : 'var(--text-muted)', textAlign: 'right', marginTop: '2px' }}>{form.questionText.length}/400</div>
           </div>
 
           <div className="form-group">
@@ -206,12 +214,12 @@ export default function UserAskQuestion({ onAskSuccess }) {
           </div>
 
           {isIndividual && (
-            <div style={{ marginTop: '1rem', borderTop: '2px solid var(--purple)', paddingTop: '1rem', background: '#f9f6f1', borderRadius: '10px', padding: '1rem' }}>
+            <div style={{ marginTop: '1rem', borderTop: '2px solid var(--purple)', paddingTop: '1rem', background: 'var(--pale)', borderRadius: '10px', padding: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.8rem' }}>
                 <span style={{ fontSize: '1.2rem' }}>🔮</span>
-                <h3 style={{ margin: 0, color: '#5c3b8b' }}>Personal Astrology Details</h3>
+                <h3 style={{ margin: 0, color: 'var(--purple)' }}>Personal Astrology Details</h3>
                 {astrologyProfiles.length > 0 && (
-                  <span style={{ fontSize: '0.72rem', color: '#817987', marginLeft: 'auto' }}>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginLeft: 'auto' }}>
                     <button className="btn btn-sm btn-outline" type="button" onClick={() => {
                       const def = astrologyProfiles.find(p => p.isDefault) || astrologyProfiles[0];
                       if (def) setProfileForm({
@@ -270,22 +278,10 @@ export default function UserAskQuestion({ onAskSuccess }) {
                 </div>
               </div>
 
-              <div style={{ marginTop: '1rem', borderTop: '1px solid var(--line)', paddingTop: '0.8rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                  <span style={{ fontSize: '1rem' }}>🌙</span>
-                  <h4 style={{ margin: 0, fontSize: '0.85rem', color: '#5c3b8b' }}>Horoscope / Chart Details</h4>
-                </div>
-                <div className="form-group">
-                  <label>Horoscope Notes</label>
-                  <textarea rows={3} value={profileForm.horoscopeNotes} onChange={e => setProfileForm({...profileForm, horoscopeNotes: e.target.value})}
-                    placeholder="e.g. Jupiter in 7th house, Saturn retrograde in 10th..." />
-                </div>
-              </div>
-
               <div style={{ marginTop: '0.8rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
                   <span style={{ fontSize: '1rem' }}>📎</span>
-                  <h4 style={{ margin: 0, fontSize: '0.85rem', color: '#5c3b8b' }}>Upload Documents</h4>
+                  <h4 style={{ margin: 0, fontSize: '0.85rem', color: 'var(--purple)' }}>Upload Documents</h4>
                 </div>
                 <div ref={uploadRef}
                   style={{ background: '#fff', border: '2px dashed var(--line)', borderRadius: '8px', padding: '1rem', textAlign: 'center', cursor: 'pointer', transition: 'border-color 0.2s, background 0.2s' }}
@@ -300,10 +296,10 @@ export default function UserAskQuestion({ onAskSuccess }) {
                     }} />
                   <label htmlFor="file-upload" style={{ cursor: 'pointer', display: 'block' }}>
                     <div style={{ fontSize: '2rem', marginBottom: '0.3rem' }}>📤</div>
-                    <span style={{ color: '#5c3b8b', fontWeight: 600, fontSize: '0.85rem' }}>Click to upload</span>
-                    <div style={{ fontSize: '0.72rem', color: '#817987', marginTop: '0.2rem' }}>Images, PDFs (max 5MB each)</div>
+                    <span style={{ color: 'var(--purple)', fontWeight: 600, fontSize: '0.85rem' }}>Click to upload</span>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>Images, PDFs (max 5MB each)</div>
                   </label>
-                  <div style={{ fontSize: '0.72rem', color: '#817987', marginTop: '0.4rem', borderTop: '1px dashed var(--line)', paddingTop: '0.4rem' }}>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.4rem', borderTop: '1px dashed var(--line)', paddingTop: '0.4rem' }}>
                     or drag & drop files here, or paste from clipboard
                   </div>
                 </div>
@@ -312,7 +308,7 @@ export default function UserAskQuestion({ onAskSuccess }) {
                     {profileForm.uploadedFiles.map((f, i) => (
                       <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.4rem 0.6rem', background: '#fff', border: '1px solid var(--line)', borderRadius: '6px', marginBottom: '0.3rem', fontSize: '0.78rem' }}>
                         <span>📎 {f.name}</span>
-                        <span style={{ color: '#817987' }}>{(f.size / 1024).toFixed(1)} KB</span>
+                        <span style={{ color: 'var(--text-muted)' }}>{(f.size / 1024).toFixed(1)} KB</span>
                         <button className="btn btn-sm btn-danger" style={{ padding: '2px 8px', fontSize: '0.65rem' }}
                           onClick={() => setProfileForm({...profileForm, uploadedFiles: profileForm.uploadedFiles.filter((_, fi) => fi !== i)})}>Remove</button>
                       </div>

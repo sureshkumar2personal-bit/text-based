@@ -1,16 +1,34 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useNotifications } from '../../contexts/NotificationContext';
 
-export default function NotificationBell() {
-  const { notifications, unreadCount, markRead, markAllRead, clearAll } = useNotifications();
+export default function NotificationBell({ actor, onNavigate }) {
+  const { notifications, markRead, markAllRead, clearAll } = useNotifications();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
+
+  const myNotifications = useMemo(() =>
+    notifications.filter(n => n.targetRole === actor),
+    [notifications, actor]
+  );
+
+  const unreadCount = useMemo(() =>
+    myNotifications.filter(n => !n.read).length,
+    [myNotifications]
+  );
 
   useEffect(() => {
     const handleClick = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
+
+  const handleClickNotif = (n) => {
+    if (!n.read) markRead(n.id);
+    if (n.navigateTo && onNavigate) {
+      onNavigate(n.navigateTo.tab, n.navigateTo.filter, n.navigateTo.preselectId);
+    }
+    setOpen(false);
+  };
 
   return (
     <div ref={ref} style={{ position: 'relative' }}>
@@ -37,17 +55,17 @@ export default function NotificationBell() {
             <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>Notifications</span>
             <div style={{ display: 'flex', gap: '0.3rem' }}>
               {unreadCount > 0 && <button className="btn btn-sm btn-secondary" style={{ fontSize: '0.65rem', padding: '3px 8px' }} onClick={markAllRead}>Mark All Read</button>}
-              {notifications.length > 0 && <button className="btn btn-sm btn-secondary" style={{ fontSize: '0.65rem', padding: '3px 8px' }} onClick={clearAll}>Clear</button>}
+              {myNotifications.length > 0 && <button className="btn btn-sm btn-secondary" style={{ fontSize: '0.65rem', padding: '3px 8px' }} onClick={clearAll}>Clear</button>}
             </div>
           </div>
 
-          {notifications.length === 0 ? (
+          {myNotifications.length === 0 ? (
             <div style={{ padding: '2rem', textAlign: 'center', color: '#888', fontSize: '0.82rem' }}>
               No notifications yet
             </div>
           ) : (
-            notifications.map(n => (
-              <div key={n.id} onClick={() => { if (!n.read) markRead(n.id); }}
+            myNotifications.map(n => (
+              <div key={n.id} onClick={() => handleClickNotif(n)}
                 style={{
                   display: 'flex', gap: '0.6rem', padding: '0.7rem 1rem', cursor: 'pointer',
                   borderBottom: '1px solid var(--line)', transition: 'background 0.15s',

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useData } from '../../data/DataContext';
 import { useToast } from '../../contexts/ToastContext';
 import { useNotifications, NOTIF_TYPES } from '../../contexts/NotificationContext';
@@ -14,16 +14,24 @@ const DISPUTE_REASONS = [
   { value: 'other', label: 'Other' }
 ];
 
-export default function UserRaiseDispute() {
-  const { questions, answers, purchases, addDispute } = useData();
+export default function UserRaiseDispute({ preselectId }) {
+  const { questions, answers, purchases, addDispute, disputes } = useData();
   const toast = useToast();
   const { addNotification } = useNotifications();
+  const disputedQuestionIds = new Set(disputes.filter(d => d.userId === 'u-1').map(d => d.questionId));
   const answeredQuestions = questions.filter(q => q.userId === 'u-1' && q.status === 'answered');
   const [selected, setSelected] = useState(null);
   const [reason, setReason] = useState('');
   const [description, setDescription] = useState('');
   const [expectation, setExpectation] = useState('');
   const [raised, setRaised] = useState(null);
+
+  useEffect(() => {
+    if (preselectId) {
+      const q = answeredQuestions.find(x => x.id === preselectId);
+      if (q) setSelected(q);
+    }
+  }, [preselectId]);
 
   const handleRaise = () => {
     if (!reason) return toast.error('Please select a reason');
@@ -42,7 +50,7 @@ export default function UserRaiseDispute() {
     setTimeout(() => {
       setRaised({ question: selected, reason, description, expectation, createdAt: new Date().toISOString(), disputeId: `disp-${Date.now()}` });
       toast.success('Dispute raised successfully!');
-      addNotification(NOTIF_TYPES.DISPUTE_RAISED, 'Dispute Raised', `Dispute on "${selected.title}" — ${reason.replace(/_/g, ' ')}`);
+      addNotification(NOTIF_TYPES.DISPUTE_RAISED, 'Dispute Raised', `Dispute on "${selected.title}" — ${reason.replace(/_/g, ' ')}`, 'astrologer', { tab: 'disputes' });
     }, 300);
   };
 
@@ -51,13 +59,13 @@ export default function UserRaiseDispute() {
       <div className="card" style={{ textAlign: 'center', padding: '2rem' }}>
         <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>⚖️</div>
         <h2>Dispute Raised Successfully!</h2>
-        <div style={{ background: '#12102a', padding: '1rem', borderRadius: '8px', display: 'inline-block', textAlign: 'left', margin: '0.5rem 0' }}>
+        <div style={{ background: 'var(--bg-elevated)', color: 'var(--text-on-elevated)', padding: '1rem', borderRadius: '8px', display: 'inline-block', textAlign: 'left', margin: '0.5rem 0' }}>
           <div>Dispute ID: <strong>{raised.disputeId}</strong></div>
-          <div>Question: <strong>{raised.question.title}</strong></div>
+          <div>Question: <strong>{raised.question.questionText?.slice(0, 40)}...</strong></div>
           <div>Reason: {raised.reason.replace('_', ' ')}</div>
           <div>Status: <span className="tag tag-red">open</span></div>
         </div>
-        <p style={{ fontSize: '0.82rem', color: '#666' }}>Track your dispute status in the "Dispute Tracking" tab. The astrologer has been notified.</p>
+        <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Track your dispute status in the "Dispute Tracking" tab. The astrologer has been notified.</p>
         <button className="btn btn-primary" style={{ marginTop: '0.5rem' }} onClick={() => { setRaised(null); setSelected(null); setReason(''); setDescription(''); }}>Raise Another</button>
       </div>
     );
@@ -68,7 +76,7 @@ export default function UserRaiseDispute() {
       <div className="card" style={{ textAlign: 'center', padding: '2rem' }}>
         <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>✅</div>
         <h2>No Answered Questions</h2>
-        <p style={{ color: '#888' }}>You can only raise disputes on answered questions.</p>
+        <p style={{ color: 'var(--text-muted)' }}>You can only raise disputes on answered questions.</p>
       </div>
     );
   }
@@ -77,15 +85,19 @@ export default function UserRaiseDispute() {
     <div>
       {!selected ? (
         <>
-          <div className="card"><h2>Raise a Dispute</h2><p style={{ fontSize: '0.82rem', color: '#888' }}>Select an answered question to dispute.</p></div>
+          <div className="card"><h2>Raise a Dispute</h2><p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Select an answered question to dispute.</p></div>
+          <div style={{ background: '#fff0f0', border: '2px solid #f87171', borderRadius: '8px', padding: '0.6rem 0.8rem', marginBottom: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.82rem', color: '#b91c1c' }}>
+            <span style={{ fontSize: '1.1rem' }}>⚠️</span>
+            <span>You can only raise a dispute <strong>once</strong> per question. Already disputed questions are marked below.</span>
+          </div>
           <div className="grid">
             {answeredQuestions.map(q => {
               const ans = answers.find(a => a.questionId === q.id);
               return (
                 <div className="card" key={q.id}>
                   <h3>{q.title}</h3>
-                  <p style={{ fontSize: '0.78rem', color: '#888', margin: '0.2rem 0' }}>{q.questionText.slice(0, 60)}...</p>
-                  <div style={{ fontSize: '0.75rem', color: '#666' }}>Astrologer: {q.astrologerName}</div>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '0.2rem 0' }}>{q.questionText.slice(0, 60)}...</p>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Astrologer: {q.astrologerName}</div>
                   {ans && <div style={{ fontSize: '0.72rem', color: '#555' }}>Answered: {new Date(ans.submittedAt).toLocaleDateString()}</div>}
                   <button className="btn btn-danger btn-sm" style={{ width: '100%', marginTop: '0.4rem' }} onClick={() => setSelected(q)}>Dispute This Answer</button>
                 </div>
@@ -96,10 +108,10 @@ export default function UserRaiseDispute() {
       ) : (
         <div className="card">
           <h2>Raise Dispute</h2>
-          <div style={{ background: '#12102a', padding: '0.8rem', borderRadius: '6px', marginBottom: '1rem' }}>
+          <div style={{ background: 'var(--bg-elevated)', color: 'var(--text-on-elevated)', padding: '0.8rem', borderRadius: '6px', marginBottom: '1rem' }}>
             <p style={{ fontWeight: 500 }}>{selected.title}</p>
-            <p style={{ fontSize: '0.8rem', color: '#aaa' }}>{selected.questionText}</p>
-            <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.2rem' }}>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{selected.questionText}</p>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
               Answer: {answers.find(a => a.questionId === selected.id)?.answerText?.slice(0, 100)}...
             </p>
           </div>

@@ -39,7 +39,8 @@ export default function PlatformDisputes() {
     setRefundAmount('');
     setResolution('');
     toast.success(`Dispute ${resolution} by platform.`);
-    addNotification(NOTIF_TYPES.DISPUTE_RESOLVED, 'Dispute Resolved', `Dispute #${selected.questionCode} resolved as "${resolution}"`);
+    addNotification(NOTIF_TYPES.DISPUTE_RESOLVED, 'Dispute Resolved', `Your dispute #${selected.questionCode} was resolved as "${resolution}"`, 'user', { tab: 'dispute-tracking' });
+    addNotification(NOTIF_TYPES.DISPUTE_RESOLVED, 'Dispute Resolved', `Dispute #${selected.questionCode} resolved as "${resolution}"`, 'astrologer', { tab: 'disputes' });
   };
 
   const sendMessage = () => {
@@ -84,8 +85,8 @@ export default function PlatformDisputes() {
               <span className={`tag ${STATUS_MAP[d.status]}`}>{d.status}</span>
             </div>
             <p style={{ fontSize: '0.8rem', margin: '0.3rem 0' }}><strong>{d.questionTitle}</strong></p>
-            <p style={{ fontSize: '0.75rem', color: '#888' }}>{d.reason.replace(/_/g, ' ')}</p>
-            <div style={{ fontSize: '0.72rem', color: '#666', marginTop: '0.2rem' }}>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{d.reason.replace(/_/g, ' ')}</p>
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
               {d.userFullName} vs {d.astrologerName} · ₹{d.purchaseAmount}
             </div>
             {d.escalatedAt && (
@@ -110,18 +111,18 @@ export default function PlatformDisputes() {
               <span className={`tag ${STATUS_MAP[selected.status]}`}>{selected.status}</span>
             </div>
 
-            <div className="row" style={{ background: '#12102a', padding: '0.6rem', borderRadius: '6px', marginBottom: '0.8rem' }}>
-              <div><span style={{ color: '#888' }}>User</span><br />{selected.userFullName}</div>
-              <div><span style={{ color: '#888' }}>Astrologer</span><br />{selected.astrologerName}</div>
-              <div><span style={{ color: '#888' }}>Amount</span><br />₹{selected.purchaseAmount}</div>
-              <div><span style={{ color: '#888' }}>Escrow</span><br />{selected.status.includes('fund') ? 'Released' : selected.status.includes('volve') || selected.status === 'open' || selected.status === 'escalated' ? 'On Hold' : '—'}</div>
+            <div className="row" style={{ background: 'var(--bg-elevated)', color: 'var(--text-on-elevated)', padding: '0.6rem', borderRadius: '6px', marginBottom: '0.8rem' }}>
+              <div><span style={{ color: 'var(--text-muted)' }}>User</span><br />{selected.userFullName}</div>
+              <div><span style={{ color: 'var(--text-muted)' }}>Astrologer</span><br />{selected.astrologerName}</div>
+              <div><span style={{ color: 'var(--text-muted)' }}>Amount</span><br />₹{selected.purchaseAmount}</div>
+              <div><span style={{ color: 'var(--text-muted)' }}>Escrow</span><br />{selected.status.includes('fund') ? 'Released' : selected.status.includes('volve') || selected.status === 'open' || selected.status === 'escalated' ? 'On Hold' : '—'}</div>
             </div>
 
-            <div style={{ background: '#12102a', padding: '0.6rem', borderRadius: '6px', marginBottom: '0.8rem' }}>
+            <div style={{ background: 'var(--bg-elevated)', color: 'var(--text-on-elevated)', padding: '0.6rem', borderRadius: '6px', marginBottom: '0.8rem' }}>
               <p><strong>Question:</strong> {selected.questionTitle}</p>
-              <p style={{ fontSize: '0.78rem', color: '#aaa' }}>{selected.questionText}</p>
+              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{selected.questionText}</p>
               <p style={{ marginTop: '0.3rem' }}><strong>Reason:</strong> {selected.reason.replace(/_/g, ' ')}</p>
-              <p style={{ fontSize: '0.78rem', color: '#aaa' }}>{selected.description}</p>
+              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{selected.description}</p>
               {selected.astrologerResponse && (
                 <div style={{ marginTop: '0.3rem', padding: '0.3rem', borderTop: '1px solid #2a2948' }}>
                   <span className="tag tag-blue" style={{ marginBottom: '2px', fontSize: '0.7rem' }}>Astrologer Response</span>

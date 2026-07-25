@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { actors } from './data/mockData';
-import { DataProvider } from './data/DataContext';
+import { DataProvider, useData } from './data/DataContext';
 import ThemeToggle from './components/ui/ThemeToggle';
 import NotificationBell from './components/ui/NotificationBell';
 import Confetti from './components/ui/Confetti';
@@ -28,6 +28,8 @@ import AstroProfile from './components/astrologer/AstroProfile';
 import AstroAnalytics from './components/astrologer/AstroAnalytics';
 import PlatformDashboard from './components/platform/PlatformDashboard';
 import TransactionLogs from './components/platform/TransactionLogs';
+import UserWallet from './components/user/UserWallet';
+import AstroWallet from './components/astrologer/AstroWallet';
 
 
 const TABS = {
@@ -36,6 +38,7 @@ const TABS = {
     { id: 'queue', label: 'Question Queue' },
     { id: 'sales', label: 'Sales' },
     { id: 'disputes', label: 'Disputes' },
+    { id: 'wallet', label: 'Wallet' },
     { id: 'profile', label: 'My Profile' },
     { id: 'analytics', label: 'Analytics' }
   ],
@@ -44,6 +47,7 @@ const TABS = {
     { id: 'questions', label: 'My Questions' },
     { id: 'purchase', label: 'Purchase' },
     { id: 'ask', label: 'Ask Question' },
+    { id: 'wallet', label: 'Wallet' },
     { id: 'tracking', label: 'Tracking' },
     { id: 'raise-dispute', label: 'Raise Dispute' },
     { id: 'dispute-tracking', label: 'Dispute Tracking' },
@@ -58,13 +62,29 @@ const TABS = {
   ]
 };
 
-export default function App() {
+function AppContent() {
   const [actor, setActor] = useState('user');
   const [tab, setTab] = useState(TABS[actor][0].id);
+  const [navFilter, setNavFilter] = useState(null);
+  const [preselectPurchase, setPreselectPurchase] = useState(null);
   const [confetti, setConfetti] = useState(false);
   const confettiTimer = useRef(null);
+  const [selectedAstrologerId, setSelectedAstrologerId] = useState('a-1');
+  const { allAstrologers } = useData();
 
-  const switchActor = (a) => { setActor(a); setTab(TABS[a][0].id); };
+  const switchActor = (a) => { setActor(a); setTab(TABS[a][0].id); setNavFilter(null); setPreselectPurchase(null); };
+
+  const handleNavigate = (t, filter, preselectId) => {
+    setNavFilter(filter);
+    setPreselectPurchase(preselectId || null);
+    setTab(t);
+  };
+
+  const handleTabClick = (id) => {
+    setNavFilter(null);
+    setPreselectPurchase(null);
+    setTab(id);
+  };
 
   const triggerConfetti = () => {
     setConfetti(true);
@@ -72,10 +92,10 @@ export default function App() {
     confettiTimer.current = setTimeout(() => setConfetti(false), 3500);
   };
 
-  const profile = actors[actor];
+  const selectedAstrologer = allAstrologers.find(a => a.id === selectedAstrologerId);
+  const profile = actor === 'astrologer' ? (selectedAstrologer || actors.astrologer) : actors[actor];
 
   return (
-    <DataProvider>
     <div className="app">
       <Confetti active={confetti} />
       <header className="app-header glass-card" style={{ borderBottom: '1px solid var(--glass-border)', position: 'sticky' }}>
@@ -89,9 +109,9 @@ export default function App() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span className="stat-pill animate-float">
-              {profile.fullName || profile.displayName}
+              {actor === 'astrologer' ? (selectedAstrologer?.displayName || profile.displayName) : (profile.fullName || profile.displayName)}
             </span>
-            <NotificationBell />
+            <NotificationBell actor={actor} onNavigate={handleNavigate} />
             <ThemeToggle />
           </div>
         </div>
@@ -101,15 +121,30 @@ export default function App() {
               onClick={() => switchActor(key)}>
               {key === 'user' ? '👤' : key === 'astrologer' ? '⭐' : '🏛️'}
               <Avatar name={val.fullName || val.displayName} size="sm" style={{ width: 20, height: 20, fontSize: '0.55rem' }} />
-              {val.fullName || val.displayName}
+              {key === 'astrologer' ? (selectedAstrologer?.displayName || val.displayName) : (val.fullName || val.displayName)}
               <span className="badge">{key}</span>
             </button>
           ))}
+          {actor === 'astrologer' && (
+            <select
+              value={selectedAstrologerId}
+              onChange={e => { setSelectedAstrologerId(e.target.value); setTab(TABS.astrologer[0].id); }}
+              style={{
+                marginLeft: '0.5rem', padding: '4px 8px', borderRadius: '6px',
+                border: '1px solid var(--line)', background: 'transparent', color: 'var(--ink)',
+                fontSize: '0.78rem', cursor: 'pointer'
+              }}
+            >
+              {allAstrologers.map(a => (
+                <option key={a.id} value={a.id}>{a.displayName}</option>
+              ))}
+            </select>
+          )}
         </div>
         <nav className="tab-bar">
           {TABS[actor].map(t => (
             <button key={t.id} className={`tab ${tab === t.id ? 'active' : ''}`}
-              onClick={() => setTab(t.id)}>{t.label}</button>
+              onClick={() => handleTabClick(t.id)}>{t.label}</button>
           ))}
         </nav>
       </header>
@@ -117,22 +152,24 @@ export default function App() {
       <main className="main animate-in">
         {actor === 'astrologer' && (
           <>
-            {tab === 'campaigns' && <AstroCampaigns />}
-            {tab === 'queue' && <AstroQueue />}
-            {tab === 'sales' && <AstroSales />}
-            {tab === 'disputes' && <AstroDisputes />}
-            {tab === 'profile' && <AstroProfile />}
-            {tab === 'analytics' && <AstroAnalytics />}
+            {tab === 'campaigns' && <AstroCampaigns astrologerId={selectedAstrologerId} />}
+            {tab === 'queue' && <AstroQueue astrologerId={selectedAstrologerId} />}
+            {tab === 'sales' && <AstroSales astrologerId={selectedAstrologerId} />}
+            {tab === 'disputes' && <AstroDisputes astrologerId={selectedAstrologerId} />}
+            {tab === 'profile' && <AstroProfile astrologerId={selectedAstrologerId} />}
+            {tab === 'wallet' && <AstroWallet astrologerId={selectedAstrologerId} />}
+            {tab === 'analytics' && <AstroAnalytics astrologerId={selectedAstrologerId} />}
           </>
         )}
         {actor === 'user' && (
           <>
-            {tab === 'dashboard' && <UserDashboard />}
-            {tab === 'questions' && <UserQuestions />}
+            {tab === 'dashboard' && <UserDashboard onNavigate={handleNavigate} />}
+            {tab === 'questions' && <UserQuestions key={'q-' + navFilter} filter={navFilter} onNavigate={handleNavigate} />}
             {tab === 'purchase' && <UserPurchase onPurchaseSuccess={triggerConfetti} />}
-            {tab === 'ask' && <UserAskQuestion onAskSuccess={triggerConfetti} />}
-            {tab === 'tracking' && <UserTracking />}
-            {tab === 'raise-dispute' && <UserRaiseDispute />}
+            {tab === 'ask' && <UserAskQuestion key={'ask-' + preselectPurchase} onAskSuccess={triggerConfetti} preselectId={preselectPurchase} />}
+            {tab === 'wallet' && <UserWallet />}
+            {tab === 'tracking' && <UserTracking key={'tr-' + navFilter} filter={navFilter} onNavigate={handleNavigate} />}
+            {tab === 'raise-dispute' && <UserRaiseDispute key={'rd-' + preselectPurchase} preselectId={preselectPurchase} />}
             {tab === 'dispute-tracking' && <UserDisputeTracking />}
             {tab === 'astrology-profiles' && <UserAstrologyProfiles />}
             {tab === 'ratings' && <UserRatings />}
@@ -148,6 +185,13 @@ export default function App() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <DataProvider>
+      <AppContent />
     </DataProvider>
   );
 }

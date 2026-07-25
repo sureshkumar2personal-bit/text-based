@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useData } from '../../data/DataContext';
 import { useToast } from '../../contexts/ToastContext';
+import { useNotifications, NOTIF_TYPES } from '../../contexts/NotificationContext';
 
 export default function UserRatings() {
   const { questions, answers, ratings, addRating } = useData();
   const toast = useToast();
+  const { addNotification } = useNotifications();
   const answeredQ = questions.filter(q => q.userId === 'u-1' && q.status === 'answered');
   const myRatings = ratings.filter(r => r.userId === 'u-1');
 
@@ -19,6 +21,7 @@ export default function UserRatings() {
     if (!selected) return;
     addRating({ questionId: selected.id, score, feedback, questionTitle: selected.title, astrologerName: selected.astrologerName });
     toast.success(`Rating submitted! You gave ${score} ⭐`);
+    addNotification(NOTIF_TYPES.RATING_RECEIVED, 'Rating Received', `You received ${score}⭐ from user for "${selected.title}"`, 'astrologer', { tab: 'analytics' });
     setSelected(null);
     setScore(5);
     setFeedback('');
@@ -26,7 +29,7 @@ export default function UserRatings() {
 
   return (
     <div>
-      <div className="card"><h2>Rate Answers</h2><p style={{ fontSize: '0.82rem', color: '#888' }}>Share your feedback on answered questions.</p></div>
+      <div className="card"><h2>Rate Answers</h2><p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Share your feedback on answered questions.</p></div>
 
       {!selected ? (
         <div className="grid">
@@ -36,8 +39,8 @@ export default function UserRatings() {
             return (
               <div className="card" key={q.id}>
                 <h3>{q.title}</h3>
-                <p style={{ fontSize: '0.78rem', color: '#888', margin: '0.2rem 0' }}>{q.questionText.slice(0, 60)}...</p>
-                <div style={{ fontSize: '0.75rem', color: '#666' }}>
+                <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '0.2rem 0' }}>{q.questionText.slice(0, 60)}...</p>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                   Astrologer: {q.astrologerName} · {q.category}
                 </div>
                 {rated ? (
@@ -62,8 +65,8 @@ export default function UserRatings() {
           <h2>Rate Answer</h2>
           <div style={{ background: 'var(--bg-glass)', padding: '1rem', borderRadius: '8px', marginBottom: '1rem' }}>
             <p style={{ fontWeight: 500 }}>{selected.title}</p>
-            <p style={{ fontSize: '0.8rem', color: '#888' }}>{selected.questionText}</p>
-            <p style={{ fontSize: '0.78rem', color: '#666', marginTop: '0.3rem' }}>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{selected.questionText}</p>
+            <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
               Answer: {answers.find(a => a.questionId === selected.id)?.answerText?.slice(0, 120)}...
             </p>
           </div>
@@ -101,11 +104,11 @@ export default function UserRatings() {
               <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0', borderBottom: '1px solid var(--line)' }}>
                 <div>
                   <div style={{ fontWeight: 500, fontSize: '0.82rem' }}>{r.questionTitle}</div>
-                  <div style={{ fontSize: '0.72rem', color: '#888' }}>{r.astrologerName}</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{r.astrologerName}</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <span style={{ color: 'var(--gold)', fontWeight: 600 }}>{r.score} ⭐</span>
-                  <div style={{ fontSize: '0.65rem', color: '#888' }}>{new Date(r.createdAt).toLocaleDateString()}</div>
+                  <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{new Date(r.createdAt).toLocaleDateString()}</div>
                 </div>
               </div>
             ))}

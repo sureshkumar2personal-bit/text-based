@@ -1,127 +1,39 @@
-import { useState } from 'react';
 import { useData } from '../../data/DataContext';
 import { allAstrologers } from '../../data/mockData';
-import { useToast } from '../../contexts/ToastContext';
-import { useNotifications, NOTIF_TYPES } from '../../contexts/NotificationContext';
-
-const APPROVAL_MAP = { pending_review: 'tag-yellow', approved: 'tag-green', rejected: 'tag-red', not_submitted: 'tag-gray' };
 
 export default function PlatformCampaigns() {
-  const { platformCampaigns, updatePlatformCampaign, campaigns, updateCampaign } = useData();
-  const toast = useToast();
-  const { addNotification } = useNotifications();
-  const [selected, setSelected] = useState(null);
-  const [rejectReason, setRejectReason] = useState('');
-
-  const approve = (id) => {
-    updatePlatformCampaign(id, { approvalStatus: 'approved', status: 'active', reviewedAt: new Date().toISOString(), reviewedBy: 'adm-1' });
-    const pCamp = platformCampaigns.find(c => c.id === id);
-    if (pCamp) {
-      const existing = campaigns.find(c => c.id === id);
-      if (existing) updateCampaign(id, { status: 'active' });
-    }
-    setSelected(null);
-  };
-
-  const reject = () => {
-    if (!rejectReason.trim()) return toast.error('Please provide a rejection reason');
-    updatePlatformCampaign(selected.id, { approvalStatus: 'rejected', rejectionReason: rejectReason, reviewedAt: new Date().toISOString(), reviewedBy: 'adm-1' });
-    setSelected(null);
-    setRejectReason('');
-    toast.warning('Campaign rejected');
-    addNotification(NOTIF_TYPES.CAMPAIGN_REJECTED, 'Campaign Rejected', `"${selected.campaignName}" was rejected. Reason: ${rejectReason}`);
-  };
-
-  const doApprove = (id) => {
-    approve(id);
-    toast.success('Campaign approved and published!');
-    const c = platformCampaigns.find(x => x.id === id);
-    addNotification(NOTIF_TYPES.CAMPAIGN_APPROVED, 'Campaign Approved', `"${c?.campaignName || id}" approved and is now live`);
-  };
-
-  const pendingCount = platformCampaigns.filter(c => c.approvalStatus === 'pending_review').length;
-  const approvedCount = platformCampaigns.filter(c => c.approvalStatus === 'approved').length;
+  const { campaigns } = useData();
 
   return (
     <div>
       <div className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2>Campaign Publishing — Platform Panel</h2>
-          <div style={{ display: 'flex', gap: '1rem', fontSize: '0.82rem' }}>
-            <span>⏳ Pending: <strong style={{ color: '#facc15' }}>{pendingCount}</strong></span>
-            <span>✅ Approved: <strong style={{ color: '#4ade80' }}>{approvedCount}</strong></span>
-          </div>
-        </div>
+        <h2>All Campaigns — Platform View</h2>
+        <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Read-only view of all astrologer campaigns</p>
       </div>
 
       <div className="grid">
-        {platformCampaigns.map(c => (
+        {campaigns.map(c => (
           <div className="card" key={c.id}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <h3>{c.campaignName}</h3>
-              <span className={`tag ${APPROVAL_MAP[c.approvalStatus]}`}>{c.approvalStatus}</span>
+              <span className={`tag ${c.status === 'active' ? 'tag-green' : c.status === 'draft' ? 'tag-yellow' : c.status === 'paused' ? 'tag-blue' : 'tag-red'}`}>{c.status}</span>
             </div>
-            <p style={{ fontSize: '0.78rem', color: '#888' }}>{c.description}</p>
+            <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{c.description}</p>
             <div className="row" style={{ marginTop: '0.4rem', fontSize: '0.8rem' }}>
-              <div><span style={{ color: '#888' }}>Astrologer</span><br />{c.astrologerName}</div>
-              <div><span style={{ color: '#888' }}>Price</span><br />₹{c.price}</div>
-              <div><span style={{ color: '#888' }}>Slots</span><br />{c.soldSlots}/{c.totalSlots}</div>
+              <div><span style={{ color: 'var(--text-muted)' }}>General/Individual</span><br />₹{c.generalPrice} / ₹{c.individualPrice}</div>
+              <div><span style={{ color: 'var(--text-muted)' }}>Slots</span><br />{c.soldSlots}/{c.totalSlots}</div>
+              <div><span style={{ color: 'var(--text-muted)' }}>Deadline</span><br />{c.deadlineHours}h</div>
             </div>
             <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', margin: '0.3rem 0' }}>
               {c.categories.map(cat => <span className="tag tag-blue" key={cat}>{cat}</span>)}
               {c.languages.map(l => <span className="tag tag-purple" key={l}>{l}</span>)}
             </div>
-
-            {c.rejectionReason && (
-              <div style={{ padding: '0.4rem', background: '#3a1616', borderRadius: '6px', fontSize: '0.75rem', color: '#f87171', marginTop: '0.3rem' }}>
-                Rejected: {c.rejectionReason}
-              </div>
-            )}
-
-            {c.approvalStatus === 'pending_review' && (
-              <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.3rem' }}>
-                <button className="btn btn-success btn-sm" style={{ flex: 1 }} onClick={() => setSelected(c)}>Review</button>
-                <button className="btn btn-danger btn-sm" style={{ flex: 1 }} onClick={() => { setSelected(c); setRejectReason(''); }}>Reject</button>
-              </div>
-            )}
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+              Mode: {c.submissionMode}/{c.answerMode} · {c.generalQuestionLimit} general / {c.individualQuestionLimit} individual slots
+            </div>
           </div>
         ))}
       </div>
-
-      {selected && (
-        <div className="modal-overlay" onClick={() => setSelected(null)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <h2>Review Campaign</h2>
-            <div style={{ background: '#12102a', padding: '1rem', borderRadius: '8px', marginBottom: '1rem' }}>
-              <h3>{selected.campaignName}</h3>
-              <p style={{ fontSize: '0.8rem', color: '#aaa' }}>{selected.description}</p>
-              <div className="row" style={{ marginTop: '0.5rem' }}>
-                <div><span style={{ color: '#888' }}>Astrologer</span><br />{selected.astrologerName}</div>
-                <div><span style={{ color: '#888' }}>Price</span><br />₹{selected.price}</div>
-                <div><span style={{ color: '#888' }}>Deadline</span><br />{selected.deadlineHours}h</div>
-                <div><span style={{ color: '#888' }}>Submitted</span><br />{new Date(selected.submittedAt).toLocaleDateString()}</div>
-              </div>
-              <div style={{ marginTop: '0.5rem' }}>
-                <div><span style={{ color: '#888' }}>Categories</span>: {selected.categories.join(', ')}</div>
-                <div><span style={{ color: '#888' }}>Languages</span>: {selected.languages.join(', ')}</div>
-                <div><span style={{ color: '#888' }}>Mode</span>: {selected.submissionMode}/{selected.answerMode}</div>
-                <div><span style={{ color: '#888' }}>Slots</span>: {selected.totalSlots} total, {selected.generalQuestionLimit} general, {selected.individualQuestionLimit} individual</div>
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label>Rejection Reason (if rejecting)</label>
-              <textarea rows={3} value={rejectReason} onChange={e => setRejectReason(e.target.value)} placeholder="If rejecting, explain why..." />
-            </div>
-
-            <div className="modal-actions">
-              <button className="btn btn-secondary" onClick={() => setSelected(null)}>Cancel</button>
-              <button className="btn btn-danger" onClick={reject} disabled={!rejectReason.trim()}>Reject</button>
-              <button className="btn btn-success" onClick={() => doApprove(selected.id)}>Approve & Publish</button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <div className="card">
         <h2>All Astrologers</h2>
@@ -134,7 +46,7 @@ export default function PlatformCampaigns() {
               {allAstrologers.map(a => (
                 <tr key={a.id}>
                   <td>{a.displayName}</td>
-                  <td style={{ color: '#888' }}>{a.title}</td>
+                  <td style={{ color: 'var(--text-muted)' }}>{a.title}</td>
                   <td>{a.rating} ⭐</td>
                   <td>{a.campaignsCount}</td>
                   <td className="value-up">₹{a.totalRevenue.toLocaleString()}</td>

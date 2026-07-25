@@ -2,18 +2,20 @@ import { useState } from 'react';
 import { useData } from '../../data/DataContext';
 import AnimatedCounter from '../ui/AnimatedCounter';
 
-export default function AstroAnalytics() {
-  const { questions, answers, ratings, campaigns } = useData();
+export default function AstroAnalytics({ astrologerId }) {
+  const { questions, answers, ratings, purchases, campaigns, allAstrologers } = useData();
   const [period, setPeriod] = useState('6m');
 
-  const answered = answers.filter(a => a.astrologerId === 'a-1').length;
-  const totalQ = questions.filter(q => q.astrologerId === 'a-1').length;
-  const myRatings = ratings.filter(r => r.astrologerId === 'a-1');
+  const astroName = allAstrologers.find(a => a.id === astrologerId)?.displayName || 'Astrologer';
+
+  const answered = answers.filter(a => a.astrologerId === astrologerId).length;
+  const totalQ = questions.filter(q => q.astrologerId === astrologerId).length;
+  const myRatings = ratings.filter(r => r.astrologerId === astrologerId);
   const avgRating = myRatings.length > 0 ? (myRatings.reduce((s, r) => s + r.score, 0) / myRatings.length) : 4.5;
   const responseTime = 12.4;
   const conversionRate = totalQ > 0 ? Math.round(answered / totalQ * 100) : 0;
-  const activeCamps = campaigns.filter(c => c.status === 'active').length;
-  const totalRevenue = campaigns.reduce((s, c) => s + c.soldSlots * c.price, 0);
+  const activeCamps = campaigns.filter(c => c.astrologerId === astrologerId && c.status === 'active').length;
+  const totalRevenue = purchases.filter(p => p.astrologerId === astrologerId).reduce((s, p) => s + p.price, 0);
 
   const metrics = [
     { label: 'Avg Rating', value: avgRating.toFixed(1), suffix: '⭐', color: 'var(--gold)' },
@@ -27,7 +29,7 @@ export default function AstroAnalytics() {
     <div>
       <div className="card card-gradient-border">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 className="gradient-text">📈 Analytics</h2>
+          <h2 className="gradient-text">📈 {astroName}'s Analytics</h2>
           <select className="btn btn-secondary btn-sm" value={period} onChange={e => setPeriod(e.target.value)}
             style={{ border: '1px solid var(--line)', borderRadius: '8px', padding: '6px 12px', background: 'transparent', color: 'var(--ink)' }}>
             <option value="1m">Last Month</option>
@@ -44,7 +46,7 @@ export default function AstroAnalytics() {
             <div style={{ fontSize: '1.6rem', fontWeight: 700, color: m.color }}>
               <AnimatedCounter value={m.value} decimals={m.label === 'Avg Rating' ? 1 : 0} />{m.suffix}
             </div>
-            <div style={{ fontSize: '0.72rem', color: '#888', marginTop: '0.2rem' }}>{m.label}</div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>{m.label}</div>
           </div>
         ))}
       </div>
@@ -76,28 +78,21 @@ export default function AstroAnalytics() {
               <span style={{ fontSize: '1.5rem' }}>📊</span>
               <div>
                 <div style={{ fontWeight: 500, fontSize: '0.85rem' }}>Answer Rate</div>
-                <div style={{ fontSize: '0.75rem', color: '#888' }}>{answered} of {totalQ} questions answered</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{answered} of {totalQ} questions answered</div>
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <span style={{ fontSize: '1.5rem' }}>⏱️</span>
               <div>
                 <div style={{ fontWeight: 500, fontSize: '0.85rem' }}>Avg Response Time</div>
-                <div style={{ fontSize: '0.75rem', color: '#888' }}>{responseTime} hours — faster than 78% of astrologers</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{responseTime} hours</div>
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <span style={{ fontSize: '1.5rem' }}>💰</span>
               <div>
                 <div style={{ fontWeight: 500, fontSize: '0.85rem' }}>Estimated Revenue</div>
-                <div style={{ fontSize: '0.75rem', color: '#888' }}>₹<AnimatedCounter value={totalRevenue} /> across all campaigns</div>
-              </div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '1.5rem' }}>🏆</span>
-              <div>
-                <div style={{ fontWeight: 500, fontSize: '0.85rem' }}>Dispute Rate</div>
-                <div style={{ fontSize: '0.75rem', color: '#888' }}>Low — excellent customer satisfaction</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>₹<AnimatedCounter value={totalRevenue} /> across all campaigns</div>
               </div>
             </div>
           </div>

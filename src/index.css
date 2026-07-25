@@ -7,6 +7,10 @@
   --gold: #db9a40;
   --pale: #f9f6f1;
   --line: #e5dfd8;
+  --text-muted: #9a8db0;
+  --text-secondary: #bca3e0;
+  --text-on-elevated: #000000;
+  --bg-elevated: #ffffff;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -251,9 +255,9 @@ tbody tr:hover td { background: #faf8f5; }
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 1.5rem;
-  max-width: 620px;
-  width: 90%;
-  max-height: 80vh;
+  max-width: 740px;
+  width: 92%;
+  max-height: 60vh;
   overflow-y: auto;
   box-shadow: 0 20px 60px #2c17301a;
 }
