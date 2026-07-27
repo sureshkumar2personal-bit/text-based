@@ -15,7 +15,6 @@ import UserQuestions from './components/user/UserQuestions';
 import UserAskQuestion from './components/user/UserAskQuestion';
 import UserTracking from './components/user/UserTracking';
 import UserRaiseDispute from './components/user/UserRaiseDispute';
-import UserDisputeTracking from './components/user/UserDisputeTracking';
 import UserAstrologyProfiles from './components/user/UserAstrologyProfiles';
 
 import PlatformCampaigns from './components/platform/PlatformCampaigns';
@@ -48,7 +47,6 @@ const TABS = {
     { id: 'wallet', label: 'Wallet' },
     { id: 'tracking', label: 'Tracking' },
     { id: 'raise-dispute', label: 'Raise Dispute' },
-    { id: 'dispute-tracking', label: 'Dispute Tracking' },
     { id: 'astrology-profiles', label: 'My Profile' },
     { id: 'ratings', label: 'Ratings & Reviews' }
   ],
@@ -167,7 +165,6 @@ function AppContent() {
             {tab === 'wallet' && <UserWallet />}
             {tab === 'tracking' && <UserTracking key={'tr-' + navFilter} filter={navFilter} onNavigate={handleNavigate} />}
             {tab === 'raise-dispute' && <UserRaiseDispute key={'rd-' + preselectPurchase} preselectId={preselectPurchase} />}
-            {tab === 'dispute-tracking' && <UserDisputeTracking />}
             {tab === 'astrology-profiles' && <UserAstrologyProfiles />}
             {tab === 'ratings' && <UserRatings />}
           </>

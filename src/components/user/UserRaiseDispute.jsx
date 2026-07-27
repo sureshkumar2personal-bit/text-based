@@ -65,7 +65,7 @@ export default function UserRaiseDispute({ preselectId }) {
           <div>Reason: {raised.reason.replace('_', ' ')}</div>
           <div>Status: <span className="tag tag-red">open</span></div>
         </div>
-        <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Track your dispute status in the "Dispute Tracking" tab. The astrologer has been notified.</p>
+        <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Your dispute has been submitted. You will receive a notification when the astrologer responds.</p>
         <button className="btn btn-primary" style={{ marginTop: '0.5rem' }} onClick={() => { setRaised(null); setSelected(null); setReason(''); setDescription(''); }}>Raise Another</button>
       </div>
     );

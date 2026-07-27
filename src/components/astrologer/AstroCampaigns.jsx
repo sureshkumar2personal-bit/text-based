@@ -115,7 +115,6 @@ export default function AstroCampaigns({ astrologerId }) {
       addNotification(NOTIF_TYPES.CAMPAIGN_REVIEW, 'Campaign Updated', `"${edit.campaignName}" has been updated by ${astroName}`, 'platform', { tab: 'campaigns' });
     } else {
       addNotification(NOTIF_TYPES.CAMPAIGN_REVIEW, 'Campaign Needs Review', `"${form.campaignName}" created by ${astroName}`, 'platform', { tab: 'campaigns' });
-      addNotification(NOTIF_TYPES.CAMPAIGN_ACTIVATED, 'New Campaign', `"${form.campaignName}" by ${astroName} is now available`, 'user', { tab: 'questions' });
     }
   };
 
@@ -133,12 +132,6 @@ export default function AstroCampaigns({ astrologerId }) {
       toast.info(`Campaign "${c.campaignName}" paused`);
       addNotification(NOTIF_TYPES.CAMPAIGN_PAUSED, 'Campaign Paused', `"${c.campaignName}" is paused — no new purchases`, 'astrologer', { tab: 'campaigns' });
       addNotification(NOTIF_TYPES.CAMPAIGN_PAUSED, 'Campaign Paused', `"${c.campaignName}" has been paused and is no longer accepting new purchases`, 'user', { tab: 'questions' });
-    } else if (status === 'stop') {
-      updateCampaign(id, { status: 'stopped' });
-      const c = campaigns.find(x => x.id === id);
-      toast.warning(`Campaign "${c.campaignName}" stopped`);
-      addNotification(NOTIF_TYPES.CAMPAIGN_STOPPED, 'Campaign Stopped', `"${c.campaignName}" has been stopped`, 'astrologer', { tab: 'campaigns' });
-      addNotification(NOTIF_TYPES.CAMPAIGN_STOPPED, 'Campaign Stopped', `"${c.campaignName}" has been stopped and is no longer accepting questions`, 'user', { tab: 'questions' });
     }
   };
 
@@ -184,7 +177,6 @@ export default function AstroCampaigns({ astrologerId }) {
                 <button className="btn btn-secondary btn-sm" onClick={() => openEdit(c)}>Edit</button>
                 {c.status === 'active' && <button className="btn btn-secondary btn-sm" onClick={() => changeStatus(c.id, 'pause')}>Pause</button>}
                 {c.status === 'paused' && <button className="btn btn-success btn-sm" onClick={() => changeStatus(c.id, 'resume')}>Resume</button>}
-                {(c.status === 'active' || c.status === 'paused') && <button className="btn btn-danger btn-sm" onClick={() => changeStatus(c.id, 'stop')}>Stop</button>}
                 <button className="btn btn-danger btn-sm" onClick={() => { if (window.confirm('Delete this campaign?')) { deleteCampaign(c.id); toast.success(`Campaign "${c.campaignName}" deleted`); addNotification(NOTIF_TYPES.CAMPAIGN_STOPPED, 'Campaign Deleted', `Campaign "${c.campaignName}" has been deleted by ${astroName}`, 'platform', { tab: 'campaigns' }); } }}>Delete</button>
               </div>
             </div>

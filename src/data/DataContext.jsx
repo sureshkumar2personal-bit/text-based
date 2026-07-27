@@ -60,8 +60,8 @@ export function DataProvider({ children }) {
 
   const addRating = (data) => {
     const q = questions.find(x => x.id === data.questionId);
-    const astrologerId = q ? q.astrologerId : 'a-1';
-    const astrologerName = q ? q.astrologerName : getAstrologerName(astrologerId);
+    const astrologerId = q ? q.astrologerId : (data.astrologerId || 'a-1');
+    const astrologerName = q ? q.astrologerName : (data.astrologerName || getAstrologerName(astrologerId));
     const r = { id: `rat-${Date.now()}`, userId: 'u-1', astrologerId, astrologerName, ...data, createdAt: new Date().toISOString() };
     setRatings(prev => [r, ...prev]);
     return r;

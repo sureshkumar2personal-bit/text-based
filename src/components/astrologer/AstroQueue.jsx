@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useData } from '../../data/DataContext';
 import { useToast } from '../../contexts/ToastContext';
 import { useNotifications, NOTIF_TYPES } from '../../contexts/NotificationContext';
@@ -10,6 +10,7 @@ export default function AstroQueue({ astrologerId }) {
   const { addNotification } = useNotifications();
   const queued = questions.filter(q => q.astrologerId === astrologerId);
   const [filter, setFilter] = useState('all');
+  const [expandedId, setExpandedId] = useState(null);
   const [selected, setSelected] = useState(null);
   const [answerMode, setAnswerMode] = useState('text');
   const [answerText, setAnswerText] = useState('');
@@ -40,6 +41,18 @@ export default function AstroQueue({ astrologerId }) {
     addNotification(NOTIF_TYPES.QUESTION_ANSWERED, 'Question Answered', `Your question "${selected.title || selected.questionText.slice(0, 40)}" has been answered`, 'user', { tab: 'questions' });
   };
 
+  const queueRef = useRef(null);
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (expandedId && queueRef.current && !queueRef.current.contains(e.target)) {
+        setExpandedId(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [expandedId]);
+
   const getStatusStyle = (s) => {
     if (s === 'answered') return 'tag-green';
     if (s === 'disputed') return 'tag-red';
@@ -65,11 +78,35 @@ export default function AstroQueue({ astrologerId }) {
           No questions in queue.
         </div>
       ) : (
-        <div className="grid">
+        <div className="grid" ref={queueRef}>
           {filtered.map(q => {
             const ans = allAnswers.find(a => a.questionId === q.id);
             return (
-              <div className="card" key={q.id}>
+              <div
+                className="card"
+                key={q.id}
+                style={{ position: 'relative', cursor: 'pointer' }}
+                onClick={() => setExpandedId(expandedId === q.id ? null : q.id)}
+              >
+                {expandedId === q.id && (
+                  <div style={{
+                    position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'rgba(26, 21, 48, 0.95)', color: '#e8e3f0', padding: '1rem', borderRadius: '12px',
+                    fontSize: '0.78rem', lineHeight: 1.5, zIndex: 100,
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.3)', border: '1px solid rgba(155,111,212,0.2)',
+                    pointerEvents: 'auto', backdropFilter: 'blur(4px)',
+                  }}>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontWeight: 600, marginBottom: '0.3rem', color: '#c8a8ff' }}>📝 {q.title}</div>
+                      <p style={{ margin: '0.5rem 0', fontSize: '0.75rem', color: '#bca3e0', whiteSpace: 'pre-wrap' }}>{q.questionText}</p>
+                      <div style={{ marginTop: '0.4rem', paddingTop: '0.3rem', borderTop: '1px solid rgba(155,111,212,0.15)', fontSize: '0.7rem', color: '#9a8db0' }}>
+                        {q.category} · {q.language} · {q.questionType}
+                        {q.profile && <> · 🔮 {q.profile.rasi}</>}
+                      </div>
+                      <div style={{ marginTop: '0.5rem', fontSize: '0.65rem', color: '#6e6573' }}>Click anywhere to close</div>
+                    </div>
+                  </div>
+                )}
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span className="tag tag-blue">{q.category}</span>
                   <span className={`tag ${getStatusStyle(q.status)}`}>{q.status}</span>
@@ -77,7 +114,7 @@ export default function AstroQueue({ astrologerId }) {
                 <h3 style={{ marginTop: '0.5rem' }}>{q.title}</h3>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0.3rem 0' }}>{q.questionText.slice(0, 100)}{q.questionText.length > 100 ? '...' : ''}</p>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                  From: <strong>{q.astrologerName}</strong> · {q.language} · {q.questionType}
+                  From user · {q.language} · {q.questionType}
                 </div>
                 {q.questionType === 'individual' && q.profile && (
                   <div style={{ marginTop: '0.3rem', fontSize: '0.72rem', color: 'var(--purple)', background: '#f3eefe', padding: '0.3rem 0.5rem', borderRadius: '6px' }}>

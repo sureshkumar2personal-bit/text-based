@@ -92,7 +92,7 @@ export default function UserQuestions({ filter, onNavigate, onPurchaseSuccess })
         borderColor: isSelected ? '#5b3da0' : undefined,
         transition: 'all 0.2s', transform: isSelected ? 'scale(1.02)' : undefined
       }}
-      onClick={() => { setSelectedAstrologerId(a.id); setSelectedCamp(null); }}
+      onClick={() => { setSelectedAstrologerId(a.id); setSelectedCamp(null); setView('astro-detail'); }}
     >
       <div style={{
         width: 48, height: 48, borderRadius: '50%',
@@ -120,7 +120,7 @@ export default function UserQuestions({ filter, onNavigate, onPurchaseSuccess })
     </div>
   );
 
-  if (view === 'purchase' && purchased) {
+  if (purchased) {
     return (
       <div>
         <div className="card" style={{ textAlign: 'center', padding: '2rem' }}>
@@ -135,7 +135,7 @@ export default function UserQuestions({ filter, onNavigate, onPurchaseSuccess })
           </div>
           <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Go to "Ask Question" tab to submit your question.</p>
           <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginTop: '0.5rem' }}>
-            <button className="btn btn-primary" onClick={() => { setPurchased(null); setSelectedCamp(null); setSelectedAstrologerId(null); }}>Buy Another</button>
+            <button className="btn btn-primary" onClick={() => { setPurchased(null); setSelectedCamp(null); setSelectedAstrologerId(null); setView('purchase'); }}>Buy Another</button>
             <button className="btn btn-secondary" onClick={resetPurchaseFlow}>Back to My Questions</button>
           </div>
         </div>
@@ -149,7 +149,7 @@ export default function UserQuestions({ filter, onNavigate, onPurchaseSuccess })
         <div className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h2>Purchase Question Slot</h2>
-            <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Select an astrologer and campaign to buy a slot</p>
+            <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Select an astrologer to view their campaigns</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
             <div style={{ textAlign: 'right' }}>
@@ -166,7 +166,7 @@ export default function UserQuestions({ filter, onNavigate, onPurchaseSuccess })
             <span className="tag tag-blue">{subscribedAstrologers.length}</span>
           </div>
           <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
-            {subscribedAstrologers.map(a => renderAstrologerCard(a, selectedAstrologerId === a.id))}
+            {subscribedAstrologers.map(a => renderAstrologerCard(a, false))}
           </div>
         </div>
 
@@ -177,12 +177,68 @@ export default function UserQuestions({ filter, onNavigate, onPurchaseSuccess })
               <span className="tag tag-purple">{suggestedAstrologers.length}</span>
             </div>
             <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
-              {suggestedAstrologers.map(a => renderAstrologerCard(a, selectedAstrologerId === a.id))}
+              {suggestedAstrologers.map(a => renderAstrologerCard(a, false))}
             </div>
           </div>
         )}
+      </div>
+    );
+  }
 
-        {selectedAstrologerId && !isSubscribed && (
+  if (view === 'astro-detail') {
+    if (!selectedAstrologer) {
+      return (
+        <div className="card" style={{ textAlign: 'center', padding: '2rem' }}>
+          <p style={{ color: 'var(--text-muted)' }}>Astrologer not found.</p>
+          <div style={{ marginTop: '0.5rem' }}>
+            <button className="btn btn-primary btn-sm" onClick={() => { setView('purchase'); setSelectedAstrologerId(null); }}>← Back to Astrologers</button>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div>
+        <div className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <button className="btn btn-secondary btn-sm" onClick={() => { setView('purchase'); setSelectedAstrologerId(null); setSelectedCamp(null); }}>← Back to Astrologers</button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Wallet Balance</div>
+              <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#4ade80' }}>₹{wallet.availableBalance.toLocaleString()}</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="card" style={{
+          borderColor: '#5b3da0',
+          background: 'linear-gradient(135deg, #f8f5ff 0%, #f0eaf8 100%)',
+          overflow: 'hidden'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+            <div style={{
+              width: 60, height: 60, borderRadius: '50%',
+              background: 'linear-gradient(135deg, #5b3da0, #c084fc)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '1.4rem', fontWeight: 700, color: '#fff', flexShrink: 0
+            }}>
+              {selectedAstrologer.displayName.split(' ').map(w => w[0]).join('').slice(0, 2)}
+            </div>
+            <div>
+              <h3 style={{ margin: 0 }}>{selectedAstrologer.displayName}</h3>
+              <p style={{ margin: '0.2rem 0', fontSize: '0.82rem', color: 'var(--text-muted)' }}>{selectedAstrologer.title}</p>
+              <div style={{ display: 'flex', gap: '1rem', fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+                <span>⭐ {selectedAstrologer.rating} ({selectedAstrologer.reviewCount} reviews)</span>
+                <span>📋 {selectedAstrologer.campaignsCount} campaigns</span>
+              </div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', marginTop: '0.6rem' }}>
+            {selectedAstrologer.specialties?.map(s => (
+              <span key={s} className="tag tag-purple">{s}</span>
+            ))}
+          </div>
+        </div>
+
+        {!isSubscribed && (
           <div className="card" style={{
             borderColor: '#c9a84c', background: 'linear-gradient(135deg, #2a1f10 0%, #3d2e15 100%)',
             boxShadow: '0 4px 24px rgba(201, 168, 76, 0.2), inset 0 1px 0 rgba(232, 200, 74, 0.1)',
@@ -195,27 +251,27 @@ export default function UserQuestions({ filter, onNavigate, onPurchaseSuccess })
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '1.3rem', fontWeight: 700, color: '#fff'
               }}>
-                {selectedAstrologer?.displayName.split(' ').map(w => w[0]).join('').slice(0, 2)}
+                {selectedAstrologer.displayName.split(' ').map(w => w[0]).join('').slice(0, 2)}
               </div>
               <div>
-                <h3 style={{ margin: 0, color: '#e8c84a' }}>{selectedAstrologer?.displayName}</h3>
-                <p style={{ margin: 0, fontSize: '0.78rem', color: '#c9a84c' }}>{selectedAstrologer?.title}</p>
+                <h3 style={{ margin: 0, color: '#e8c84a' }}>{selectedAstrologer.displayName}</h3>
+                <p style={{ margin: 0, fontSize: '0.78rem', color: '#c9a84c' }}>{selectedAstrologer.title}</p>
               </div>
             </div>
 
             <div style={{ display: 'flex', gap: '1.5rem', margin: '0.6rem 0', color: '#bca3e0', fontSize: '0.82rem' }}>
-              <div>⭐ {selectedAstrologer?.rating} ({selectedAstrologer?.reviewCount} reviews)</div>
-              <div>📋 {selectedAstrologer?.campaignsCount} campaigns</div>
+              <div>⭐ {selectedAstrologer.rating} ({selectedAstrologer.reviewCount} reviews)</div>
+              <div>📋 {selectedAstrologer.campaignsCount} campaigns</div>
             </div>
 
             <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', margin: '0.4rem 0' }}>
-              {selectedAstrologer?.specialties?.map(s => (
+              {selectedAstrologer.specialties?.map(s => (
                 <span key={s} className="tag tag-purple">{s}</span>
               ))}
             </div>
 
             <p style={{ color: '#bca3e0', fontSize: '0.85rem', margin: '0.6rem 0' }}>
-              Subscribe to <strong style={{ color: '#dcc8ff' }}>{selectedAstrologer?.displayName}</strong> to view and purchase their question slots.
+              Subscribe to <strong style={{ color: '#dcc8ff' }}>{selectedAstrologer.displayName}</strong> to view and purchase their question slots.
             </p>
 
             <div style={{ fontSize: '0.72rem', color: '#9a7fc0', marginBottom: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
@@ -223,7 +279,7 @@ export default function UserQuestions({ filter, onNavigate, onPurchaseSuccess })
             </div>
 
             <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button className="btn btn-secondary" style={{ background: 'rgba(255,255,255,0.06)', borderColor: '#c9a84c', color: '#c9a84c' }} onClick={() => setSelectedAstrologerId(null)}>Cancel</button>
+              <button className="btn btn-secondary" style={{ background: 'rgba(255,255,255,0.06)', borderColor: '#c9a84c', color: '#c9a84c' }} onClick={() => { setView('purchase'); setSelectedAstrologerId(null); }}>Cancel</button>
               <button className="btn btn-primary" style={{ background: 'linear-gradient(135deg, #c9a84c, #e8c84a, #f7e07a, #e8c84a)', borderColor: '#fae582', color: '#1a1508', fontWeight: 700, boxShadow: '0 0 20px rgba(232, 200, 74, 0.5), 0 0 40px rgba(232, 200, 74, 0.2)' }} onClick={handleSubscribe} disabled={subscribingLoading}>
                 {subscribingLoading ? '⏳ Subscribing...' : '🔔 Subscribe'}
               </button>
@@ -231,7 +287,7 @@ export default function UserQuestions({ filter, onNavigate, onPurchaseSuccess })
           </div>
         )}
 
-        {selectedAstrologerId && isSubscribed && (
+        {isSubscribed && (
           <>
             {selectedCamp && (
               <div className="card" style={{
@@ -281,7 +337,7 @@ export default function UserQuestions({ filter, onNavigate, onPurchaseSuccess })
             )}
 
             <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <h3>Campaigns from {selectedAstrologer?.displayName}</h3>
+              <h3>Campaigns from {selectedAstrologer.displayName}</h3>
               <span className="tag tag-blue">{activeCamps.length} active</span>
             </div>
 

@@ -40,14 +40,14 @@ export default function PlatformDisputes() {
     setRefundAmount('');
     setResolution('');
     toast.success(`Dispute ${resolution} by platform.`);
-    addNotification(NOTIF_TYPES.DISPUTE_RESOLVED, 'Dispute Resolved', `Your dispute #${selected.questionCode} was resolved as "${resolution}"`, 'user', { tab: 'dispute-tracking' });
+    addNotification(NOTIF_TYPES.DISPUTE_RESOLVED, 'Dispute Resolved', `Your dispute #${selected.questionCode} was resolved as "${resolution}"`, 'user', { tab: 'questions' });
     addNotification(NOTIF_TYPES.DISPUTE_RESOLVED, 'Dispute Resolved', `Dispute #${selected.questionCode} resolved as "${resolution}"`, 'astrologer', { tab: 'disputes' });
   };
 
   const sendMessage = () => {
     if (!newMsg.trim()) return;
     addDisputeMessage(selected.id, 'platform', 'adm-1', 'Platform', newMsg.trim());
-    addNotification(NOTIF_TYPES.DISPUTE_RAISED, 'Platform Message on Dispute', 'Platform sent a new message on dispute #' + selected.questionCode, ['user', 'astrologer'], { tab: 'disputes' });
+    addNotification(NOTIF_TYPES.DISPUTE_RAISED, 'Platform Message on Dispute', 'Platform sent a new message on dispute #' + selected.questionCode, ['user', 'astrologer']);
     setNewMsg('');
   };
 

@@ -13,7 +13,11 @@ export default function AstroProfile({ astrologerId }) {
   const settings = (astroSettingsMap && astroSettingsMap[astrologerId]) || defaultAstrologerSettings;
   const astroInfo = allAstrologers && allAstrologers.find(a => a.id === astrologerId);
   const [edit, setEdit] = useState(false);
-  const [form, setForm] = useState({ ...settings });
+  const [form, setForm] = useState({
+    ...settings,
+    email: settings.email || astroInfo?.email || '',
+    mobile: settings.mobile || astroInfo?.mobile || '',
+  });
 
   const handleSave = () => {
     updateAstroSettings(astrologerId, {
@@ -21,6 +25,8 @@ export default function AstroProfile({ astrologerId }) {
       experienceYears: Number(form.experienceYears),
       specialties: form.specialties, consultationLanguages: form.consultationLanguages,
       maxDailyQuestions: Number(form.maxDailyQuestions),
+      email: form.email,
+      mobile: form.mobile,
       autoAcceptQuestions: form.autoAcceptQuestions,
       instantAnswerEnabled: form.instantAnswerEnabled,
       notificationPreferences: form.notificationPreferences,
@@ -54,6 +60,10 @@ export default function AstroProfile({ astrologerId }) {
               <div className="row">
                 <div className="form-group"><label>Display Name</label><input value={form.displayName} onChange={e => setForm({...form, displayName: e.target.value})} /></div>
                 <div className="form-group"><label>Title</label><input value={form.title} onChange={e => setForm({...form, title: e.target.value})} /></div>
+              </div>
+              <div className="row">
+                <div className="form-group"><label>Email</label><input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} /></div>
+                <div className="form-group"><label>Mobile</label><input type="tel" value={form.mobile} onChange={e => setForm({...form, mobile: e.target.value})} /></div>
               </div>
               <div className="form-group"><label>Bio</label><textarea rows={4} value={form.bio} onChange={e => setForm({...form, bio: e.target.value})} /></div>
               <div className="row">
@@ -98,6 +108,8 @@ export default function AstroProfile({ astrologerId }) {
                 <div style={{ marginTop: '0.8rem' }}>
                   <div className="stat-pill">🎂 {settings.experienceYears} years experience</div>
                   <div className="stat-pill" style={{ marginLeft: '0.3rem' }}>📅 {settings.maxDailyQuestions} questions/day</div>
+                  <div className="stat-pill" style={{ marginLeft: '0.3rem' }}>📧 {settings.email || astroInfo?.email || 'N/A'}</div>
+                  <div className="stat-pill" style={{ marginLeft: '0.3rem' }}>📱 {settings.mobile || astroInfo?.mobile || 'N/A'}</div>
                 </div>
               </div>
               <div style={{ marginTop: '0.8rem' }}>
