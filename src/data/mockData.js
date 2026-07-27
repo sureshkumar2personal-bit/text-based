@@ -1,7 +1,7 @@
 const now = new Date();
 
 export const actors = {
-  user: { id: 'u-1', fullName: 'Priya Sharma', email: 'priya@example.com', mobile: '+91-9876543210' },
+  user: { id: 'u-1', fullName: 'Sureshkumar', email: 'priya@example.com', mobile: '+91-9876543210' },
   astrologer: { id: 'a-1', displayName: 'Dr. Arjun Nair', title: 'Vedic Astrologer', email: 'arjun@astro.com', mobile: '+91-8765432109', rating: 4.5, reviewCount: 128 },
   platform: { id: 'adm-1', fullName: 'Platform Operator', role: 'platform_operator' }
 };
@@ -672,7 +672,7 @@ export const disputes = [
     updatedAt: new Date(now.getTime() - 1 * 86400000).toISOString(),
     questionCode: 'Q-V9C-D2A', questionTitle: 'Health issue',
     questionText: 'Enakku weekly thalai vali irukku. En chart la ethavathu dosham irukka?',
-    userFullName: 'Priya Sharma', astrologerName: 'Dr. Arjun Nair',
+    userFullName: 'Sureshkumar', astrologerName: 'Dr. Arjun Nair',
     purchaseAmount: 199, purchaseStatus: 'disputed'
   },
   {
@@ -690,7 +690,7 @@ export const disputes = [
     updatedAt: new Date(now.getTime() - 12 * 3600000).toISOString(),
     questionCode: 'Q-K2M-L8N', questionTitle: 'Investment timing',
     questionText: 'I am planning to invest in real estate. Is this a good time based on my chart?',
-    userFullName: 'Priya Sharma', astrologerName: 'Dr. Arjun Nair',
+    userFullName: 'Sureshkumar', astrologerName: 'Dr. Arjun Nair',
     purchaseAmount: 299, purchaseStatus: 'disputed'
   }
 ];
@@ -698,12 +698,12 @@ export const disputes = [
 export const disputeMessages = [
   {
     id: 'dm-1', disputeId: 'disp-1', senderType: 'user', senderId: 'u-1',
-    senderName: 'Priya Sharma', message: 'Dispute raised: incomplete_answer. The answer was too brief and did not address my specific health concerns.',
+    senderName: 'Sureshkumar', message: 'Dispute raised: incomplete_answer. The answer was too brief and did not address my specific health concerns.',
     createdAt: new Date(now.getTime() - 2 * 86400000).toISOString()
   },
   {
     id: 'dm-2', disputeId: 'disp-2', senderType: 'user', senderId: 'u-1',
-    senderName: 'Priya Sharma', message: 'Dispute raised: too_brief. Could you elaborate more on the timing aspect?',
+    senderName: 'Sureshkumar', message: 'Dispute raised: too_brief. Could you elaborate more on the timing aspect?',
     createdAt: new Date(now.getTime() - 3 * 86400000).toISOString()
   },
   {
@@ -713,12 +713,12 @@ export const disputeMessages = [
   },
   {
     id: 'dm-4', disputeId: 'disp-2', senderType: 'user', senderId: 'u-1',
-    senderName: 'Priya Sharma', message: 'I need exact dates and the reasoning based on my birth chart placements.',
+    senderName: 'Sureshkumar', message: 'I need exact dates and the reasoning based on my birth chart placements.',
     createdAt: new Date(now.getTime() - 18 * 3600000).toISOString()
   },
   {
     id: 'dm-5', disputeId: 'disp-2', senderType: 'user', senderId: 'u-1',
-    senderName: 'Priya Sharma', message: 'Dispute escalated to platform.',
+    senderName: 'Sureshkumar', message: 'Dispute escalated to platform.',
     createdAt: new Date(now.getTime() - 12 * 3600000).toISOString()
   }
 ];

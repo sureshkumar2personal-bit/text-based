@@ -34,7 +34,7 @@ export default function UserDisputeTracking() {
 
   const sendMessage = () => {
     if (!newMsg.trim()) return;
-    addDisputeMessage(selected.id, 'user', 'u-1', 'Priya Sharma', newMsg.trim());
+    addDisputeMessage(selected.id, 'user', 'u-1', 'Sureshkumar', newMsg.trim());
     addNotification(NOTIF_TYPES.DISPUTE_RAISED, 'New Message on Dispute', 'User sent a new message on dispute #' + selected.questionCode, ['astrologer', 'platform'], { tab: 'disputes' });
     setNewMsg('');
   };

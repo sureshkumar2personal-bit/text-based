@@ -191,14 +191,14 @@ export function DataProvider({ children }) {
       createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
       questionCode: data.questionCode, questionTitle: data.questionTitle,
       questionText: data.questionText,
-      userFullName: 'Priya Sharma', astrologerName,
+      userFullName: 'Sureshkumar', astrologerName,
       purchaseAmount: data.purchaseAmount, purchaseStatus: 'disputed'
     };
     setDisputes(prev => [d, ...prev]);
     updateQuestionStatus(data.questionId, 'disputed');
     setDisputeMessages(prev => [...prev, {
       id: `dm-${Date.now()}`, disputeId: d.id, senderType: 'user', senderId: 'u-1',
-      senderName: 'Priya Sharma',
+      senderName: 'Sureshkumar',
       message: `Dispute raised: ${data.reason}. ${data.description}`,
       createdAt: new Date().toISOString()
     }]);
