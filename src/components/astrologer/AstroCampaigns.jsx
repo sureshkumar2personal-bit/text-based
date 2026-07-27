@@ -8,8 +8,8 @@ import ModalPortal from '../ui/ModalPortal';
 const STATUS_MAP = { draft: 'tag-yellow', active: 'tag-green', paused: 'tag-blue', stopped: 'tag-red' };
 const GENERAL_PRICES = [99, 199, 299, 399];
 const INDIVIDUAL_PRICES = [299, 399, 499, 599];
-const DEFAULT_CATEGORIES = ['General Astrology'];
-const DEFAULT_LANGUAGES = ['English'];
+const DEFAULT_CATEGORIES = ['General Astrology', 'Career', 'Study/Education', 'Dosham', 'Health', 'Finance', 'Marriage', 'Relationship', 'Family', 'Business'];
+const DEFAULT_LANGUAGES = ['English', 'Tamil', 'Tanglish'];
 const EMPTY_CAMPAIGN_FORM = {
   campaignName: '',
   description: '',

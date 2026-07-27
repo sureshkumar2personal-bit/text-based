@@ -105,32 +105,39 @@ export function DataProvider({ children }) {
     return tx;
   };
 
-  const addPurchase = (camp, variation = 'general') => {
+  const addPurchase = (camp, variation = 'general', quantity = 1) => {
     const actualPrice = variation === 'individual' ? camp.individualPrice : camp.generalPrice;
     const astrologerId = camp.astrologerId || 'a-1';
-    const p = {
-      id: `pur-${Date.now()}`, userId: 'u-1', astrologerId, campaignId: camp.id,
-      purchaseCode: `QP-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
-      price: actualPrice, currency: 'INR', paymentStatus: 'paid', purchaseStatus: 'question_pending',
-      variation,
-      questionSubmitted: false, questionId: null,
-      campaignName: camp.campaignName, answerMode: camp.answerMode,
-      expiresAt: new Date(Date.now() + 7 * 86400000).toISOString(),
-      createdAt: new Date().toISOString()
-    };
-    setPurchases(prev => [p, ...prev]);
-    addTransaction('debit', actualPrice, `Purchase from campaign: ${camp.campaignName}`);
-    setEscrowRecords(prev => [...prev, {
-      id: `esc-${Date.now()}`, userId: 'u-1', astrologerId,
-      serviceType: 'question_purchase', serviceId: p.id,
-      grossAmount: actualPrice, platformCommission: actualPrice * 0.2,
-      astrologerAmount: actualPrice * 0.8, status: 'held'
-    }]);
+    const totalPrice = actualPrice * quantity;
+    const purchases = [];
+    const escrows = [];
+    for (let i = 0; i < quantity; i++) {
+      const p = {
+        id: `pur-${Date.now()}-${i}`, userId: 'u-1', astrologerId, campaignId: camp.id,
+        purchaseCode: `QP-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
+        price: actualPrice, currency: 'INR', paymentStatus: 'paid', purchaseStatus: 'question_pending',
+        variation,
+        questionSubmitted: false, questionId: null,
+        campaignName: camp.campaignName, answerMode: camp.answerMode,
+        expiresAt: new Date(Date.now() + 7 * 86400000).toISOString(),
+        createdAt: new Date().toISOString()
+      };
+      purchases.push(p);
+      escrows.push({
+        id: `esc-${Date.now()}-${i}`, userId: 'u-1', astrologerId,
+        serviceType: 'question_purchase', serviceId: p.id,
+        grossAmount: actualPrice, platformCommission: actualPrice * 0.2,
+        astrologerAmount: actualPrice * 0.8, status: 'held'
+      });
+    }
+    setPurchases(prev => [...purchases, ...prev]);
+    addTransaction('debit', totalPrice, `Purchased ${quantity}x ${variation} slot(s) from ${camp.campaignName}`);
+    setEscrowRecords(prev => [...escrows, ...prev]);
     setCampaigns(prev => prev.map(c => c.id === camp.id ? {
-      ...c, soldSlots: c.soldSlots + 1, availableSlots: c.availableSlots - 1,
-      ...(variation === 'general' ? { generalSoldCount: c.generalSoldCount + 1 } : { individualSoldCount: c.individualSoldCount + 1 })
+      ...c, soldSlots: c.soldSlots + quantity, availableSlots: c.availableSlots - quantity,
+      ...(variation === 'general' ? { generalSoldCount: (c.generalSoldCount || 0) + quantity } : { individualSoldCount: (c.individualSoldCount || 0) + quantity })
     } : c));
-    return p;
+    return purchases;
   };
 
   const addQuestion = (data) => {

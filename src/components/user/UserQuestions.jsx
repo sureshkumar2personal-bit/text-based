@@ -16,6 +16,7 @@ export default function UserQuestions({ filter, onNavigate, onPurchaseSuccess })
   const [selectedAstrologerId, setSelectedAstrologerId] = useState(null);
   const [selectedCamp, setSelectedCamp] = useState(null);
   const [variation, setVariation] = useState('general');
+  const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
   const [purchased, setPurchased] = useState(null);
   const [subscribedIds, setSubscribedIds] = useLocalState('user-subscribed-astrologers', []);
@@ -35,6 +36,8 @@ export default function UserQuestions({ filter, onNavigate, onPurchaseSuccess })
   const effectivePrice = selectedCamp
     ? (variation === 'individual' ? selectedCamp.individualPrice : selectedCamp.generalPrice)
     : 0;
+
+  const totalPrice = effectivePrice * quantity;
 
   const filteredPurchases = filter === 'unused'
     ? myPurchases.filter(p => p.purchaseStatus === 'question_pending' && !p.questionSubmitted)
@@ -59,18 +62,23 @@ export default function UserQuestions({ filter, onNavigate, onPurchaseSuccess })
 
   const handlePurchase = () => {
     if (!selectedCamp) return;
-    if (wallet.availableBalance < effectivePrice) {
+    if (wallet.availableBalance < totalPrice) {
       toast.error('Insufficient wallet balance! Top up your wallet first.');
+      return;
+    }
+    if (quantity > selectedCamp.availableSlots) {
+      toast.error('Not enough available slots!');
       return;
     }
     setLoading(true);
     setTimeout(() => {
-      const p = addPurchase(selectedCamp, variation);
-      setPurchased({ id: p.id, campaignName: p.campaignName, price: p.price, purchaseCode: p.purchaseCode, purchaseStatus: 'question_pending', variation: p.variation });
+      const ps = addPurchase(selectedCamp, variation, quantity);
+      const first = ps[0];
+      setPurchased({ count: quantity, campaignName: first.campaignName, price: totalPrice, variation: first.variation });
       setLoading(false);
-      toast.success(`Purchased ${variation} slot in ${p.campaignName}!`, 4000);
-      addNotification(NOTIF_TYPES.PURCHASE_SUCCESS, 'Slot Purchased', `You bought a ${variation} slot in "${p.campaignName}" for ₹${p.price}`, 'user', { tab: 'questions' });
-      addNotification(NOTIF_TYPES.NEW_QUEUE_ITEM, 'New Slot Purchase', `${p.campaignName} — ${variation} slot purchased by user`, 'astrologer', { tab: 'queue' });
+      toast.success(`Purchased ${quantity}x ${variation} slot(s) in ${first.campaignName}!`, 4000);
+      addNotification(NOTIF_TYPES.PURCHASE_SUCCESS, 'Slot Purchased', `You bought ${quantity}x ${variation} slot(s) in "${first.campaignName}" for ₹${totalPrice}`, 'user', { tab: 'questions' });
+      addNotification(NOTIF_TYPES.NEW_QUEUE_ITEM, 'New Slot Purchase', `${first.campaignName} — ${quantity}x ${variation} slot(s) purchased by user`, 'astrologer', { tab: 'queue' });
       if (onPurchaseSuccess) onPurchaseSuccess();
     }, 1200);
   };
@@ -80,6 +88,7 @@ export default function UserQuestions({ filter, onNavigate, onPurchaseSuccess })
     setSelectedAstrologerId(null);
     setSelectedCamp(null);
     setVariation('general');
+    setQuantity(1);
     setPurchased(null);
   };
 
@@ -126,10 +135,9 @@ export default function UserQuestions({ filter, onNavigate, onPurchaseSuccess })
         <div className="card" style={{ textAlign: 'center', padding: '2rem' }}>
           <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>✅</div>
           <h2>Purchase Successful!</h2>
-          <p style={{ color: 'var(--text-muted)', margin: '0.5rem 0' }}>You've purchased a <strong>{purchased.variation}</strong> slot in <strong>{purchased.campaignName}</strong></p>
+          <p style={{ color: 'var(--text-muted)', margin: '0.5rem 0' }}>You've purchased <strong>{purchased.count}x {purchased.variation}</strong> slot(s) in <strong>{purchased.campaignName}</strong></p>
           <div style={{ background: 'var(--bg-elevated)', color: 'var(--text-on-elevated)', padding: '1rem', borderRadius: '8px', display: 'inline-block', textAlign: 'left', margin: '0.5rem 0' }}>
-            <div>Code: <strong>{purchased.purchaseCode}</strong></div>
-            <div>Amount: <strong>₹{purchased.price}</strong></div>
+            <div>Total Amount: <strong>₹{purchased.price}</strong></div>
             <div>Type: <span className="tag tag-purple">{purchased.variation}</span></div>
             <div>Status: <span className="tag tag-yellow">question_pending</span></div>
           </div>
@@ -320,17 +328,26 @@ export default function UserQuestions({ filter, onNavigate, onPurchaseSuccess })
                 </div>
 
                 <div className="row" style={{ marginTop: '0.4rem', background: 'rgba(150,100,230,0.08)', borderRadius: '8px', padding: '0.6rem' }}>
-                  <div><span style={{ color: '#a88bd0' }}>Price</span><br /><strong style={{ fontSize: '1.2rem', color: '#c8a8ff' }}>₹{effectivePrice}</strong></div>
-                  <div><span style={{ color: '#a88bd0' }}>Available Slots</span><br /><strong style={{ color: '#c8a8ff' }}>{selectedCamp.availableSlots}</strong></div>
-                  <div><span style={{ color: '#a88bd0' }}>Answer Mode</span><br /><strong style={{ color: '#c8a8ff' }}>{selectedCamp.answerMode}</strong></div>
+                  <div><span style={{ color: '#a88bd0' }}>Unit Price</span><br /><strong style={{ fontSize: '1.2rem', color: '#c8a8ff' }}>₹{effectivePrice}</strong></div>
+                  <div><span style={{ color: '#a88bd0' }}>Quantity</span><br />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '2px' }}>
+                      <button className="btn btn-sm btn-secondary" style={{ padding: '2px 8px', fontSize: '0.85rem' }}
+                        onClick={() => setQuantity(q => Math.max(1, q - 1))} disabled={quantity <= 1}>−</button>
+                      <strong style={{ color: '#c8a8ff', fontSize: '1rem', minWidth: '24px', textAlign: 'center' }}>{quantity}</strong>
+                      <button className="btn btn-sm btn-secondary" style={{ padding: '2px 8px', fontSize: '0.85rem' }}
+                        onClick={() => setQuantity(q => Math.min(selectedCamp.availableSlots, q + 1))} disabled={quantity >= selectedCamp.availableSlots}>+</button>
+                    </div>
+                  </div>
+                  <div><span style={{ color: '#a88bd0' }}>Total</span><br /><strong style={{ fontSize: '1.2rem', color: '#f7e07a' }}>₹{totalPrice}</strong></div>
+                  <div><span style={{ color: '#a88bd0' }}>Slots Left</span><br /><strong style={{ color: '#c8a8ff' }}>{selectedCamp.availableSlots}</strong></div>
                 </div>
                 <div style={{ fontSize: '0.72rem', color: '#9a7fc0', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                   <span>🔒</span> Payment will be deducted from your wallet and held in escrow.
                 </div>
                 <div style={{ marginTop: '0.8rem', display: 'flex', gap: '0.5rem' }}>
-                  <button className="btn btn-secondary" style={{ background: 'rgba(255,255,255,0.06)', borderColor: '#5b3da0', color: '#bca3e0' }} onClick={() => setSelectedCamp(null)}>Cancel</button>
+                  <button className="btn btn-secondary" style={{ background: 'rgba(255,255,255,0.06)', borderColor: '#5b3da0', color: '#bca3e0' }} onClick={() => { setSelectedCamp(null); setQuantity(1); }}>Cancel</button>
                   <button className="btn btn-primary" style={{ background: 'linear-gradient(135deg, #c9a84c, #e8c84a, #f7e07a, #e8c84a)', borderColor: '#fae582', color: '#1a1508', fontWeight: 700, boxShadow: '0 0 20px rgba(232, 200, 74, 0.5), 0 0 40px rgba(232, 200, 74, 0.2)' }} onClick={handlePurchase} disabled={loading}>
-                    {loading ? '⏳ Processing...' : `💳 Pay ₹${effectivePrice} from Wallet`}
+                    {loading ? '⏳ Processing...' : `💳 Pay ₹${totalPrice} from Wallet`}
                   </button>
                 </div>
               </div>

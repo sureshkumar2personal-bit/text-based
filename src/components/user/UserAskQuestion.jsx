@@ -12,7 +12,7 @@ export default function UserAskQuestion({ onAskSuccess, preselectId }) {
 
   const [step, setStep] = useState('select');
   const [selectedPur, setSelectedPur] = useState(null);
-  const [form, setForm] = useState({ questionType: 'general', category: '', language: '', questionText: '' });
+  const [form, setForm] = useState({ questionType: 'general', language: 'English', questionText: '' });
 
   const [profileForm, setProfileForm] = useState({
     dateOfBirth: '', birthTime: '', birthPlace: '', rasi: '', nakshatra: '', pada: 1, lagna: '',
@@ -96,7 +96,7 @@ export default function UserAskQuestion({ onAskSuccess, preselectId }) {
     setSelectedPur(p);
     const c = campaigns.find(c => c.id === p.campaignId);
     setCamp(c);
-    setForm({ questionType: p.variation || 'general', category: c.categories[0], language: c.languages[0], questionText: '' });
+    setForm({ questionType: p.variation || 'general', language: 'English', questionText: '' });
     deleteRecording();
     const def = astrologyProfiles.find(pr => pr.isDefault);
     if (def) {
@@ -126,7 +126,6 @@ export default function UserAskQuestion({ onAskSuccess, preselectId }) {
 
   const handleSubmit = () => {
     if (!form.questionText) return toast.error('Question text is required');
-    if (!form.category) return toast.error('Please select a category');
     if (!form.language) return toast.error('Please select a language');
 
     if (isIndividual) {
@@ -138,7 +137,7 @@ export default function UserAskQuestion({ onAskSuccess, preselectId }) {
 
     const q = addQuestion({
       campaignId: camp.id, purchaseId: selectedPur.id,
-      questionType: form.questionType, category: form.category, language: form.language,
+      questionType: form.questionType, language: form.language,
       title: form.questionText.slice(0, 50), questionText: form.questionText,
       deadlineHours: camp.deadlineHours, campaignName: camp.campaignName, answerMode: camp.answerMode,
       profile: isIndividual ? { ...profileForm, uploadedFiles: undefined } : null,
@@ -181,7 +180,7 @@ export default function UserAskQuestion({ onAskSuccess, preselectId }) {
         <div style={{ background: 'var(--pale)', padding: '1rem', borderRadius: '8px', display: 'inline-block', textAlign: 'left', margin: '0.5rem 0' }}>
           <div>Code: <strong>{submitted.questionCode}</strong></div>
           <div>Campaign: <strong>{submitted.campaign.campaignName}</strong></div>
-          <div>Category: {submitted.category} · Language: {submitted.language}</div>
+          <div>Language: {submitted.language}</div>
           <div>Type: <strong>{submitted.questionType}</strong></div>
           {submitted.profile && (
             <div style={{ marginTop: '0.3rem', paddingTop: '0.3rem', borderTop: '1px solid var(--line)' }}>
@@ -255,15 +254,11 @@ export default function UserAskQuestion({ onAskSuccess, preselectId }) {
               </div>
             </div>
             <div className="form-group">
-              <label>Category</label>
-              <select value={form.category} onChange={e => setForm({...form, category: e.target.value})}>
-                {camp.categories.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-            <div className="form-group">
               <label>Language</label>
               <select value={form.language} onChange={e => setForm({...form, language: e.target.value})}>
-                {camp.languages.map(l => <option key={l} value={l}>{l}</option>)}
+                <option value="English">English</option>
+                <option value="Tamil">Tamil</option>
+                <option value="Tanglish">Tanglish</option>
               </select>
             </div>
           </div>

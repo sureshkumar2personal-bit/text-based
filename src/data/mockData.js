@@ -45,7 +45,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'text',
     deadlineHours: 48, status: 'active',
     categories: ['Career', 'Finance', 'Business'],
-    languages: ['English', 'Hindi', 'Tamil'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 7 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 23 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 8 * 86400000).toISOString()
@@ -59,7 +59,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'voice',
     deadlineHours: 72, status: 'active',
     categories: ['Love', 'Marriage', 'Relationship'],
-    languages: ['English', 'Hindi'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 14 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 16 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 15 * 86400000).toISOString()
@@ -73,7 +73,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'text',
     deadlineHours: 48, status: 'active',
     categories: ['Health', 'Wellness'],
-    languages: ['English', 'Tamil', 'Malayalam'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 30 * 86400000).toISOString(),
     endAt: new Date(now.getTime() - 1 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 31 * 86400000).toISOString()
@@ -87,7 +87,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'text',
     deadlineHours: 48, status: 'draft',
     categories: ['Education', 'Career'],
-    languages: ['English', 'Hindi'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: null, endAt: null,
     createdAt: new Date(now.getTime() - 2 * 86400000).toISOString()
   },
@@ -100,7 +100,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'text',
     deadlineHours: 24, status: 'paused',
     categories: ['General', 'Weekly'],
-    languages: ['Tamil'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 10 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 20 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 11 * 86400000).toISOString()
@@ -114,7 +114,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'text',
     deadlineHours: 48, status: 'active',
     categories: ['General', 'Career', 'Health'],
-    languages: ['Tamil'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 5 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 25 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 6 * 86400000).toISOString()
@@ -128,7 +128,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'voice',
     deadlineHours: 72, status: 'active',
     categories: ['Palmistry', 'General'],
-    languages: ['Tamil', 'English'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 3 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 27 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 4 * 86400000).toISOString()
@@ -142,7 +142,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'text',
     deadlineHours: 96, status: 'draft',
     categories: ['Marriage', 'Relationship'],
-    languages: ['Tamil'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: null, endAt: null,
     createdAt: new Date(now.getTime() - 1 * 86400000).toISOString()
   },
@@ -155,7 +155,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'text',
     deadlineHours: 24, status: 'active',
     categories: ['Numerology', 'Gemstone'],
-    languages: ['English', 'Hindi'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 10 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 20 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 11 * 86400000).toISOString()
@@ -169,7 +169,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'text',
     deadlineHours: 48, status: 'active',
     categories: ['Numerology', 'Name Analysis'],
-    languages: ['English', 'Hindi'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 6 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 24 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 7 * 86400000).toISOString()
@@ -183,7 +183,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'text',
     deadlineHours: 36, status: 'active',
     categories: ['General', 'Prashna'],
-    languages: ['English', 'Hindi', 'Tamil'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 8 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 22 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 9 * 86400000).toISOString()
@@ -197,7 +197,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'voice',
     deadlineHours: 72, status: 'active',
     categories: ['Muhurtha', 'Ceremonies'],
-    languages: ['English', 'Tamil'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 4 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 26 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 5 * 86400000).toISOString()
@@ -211,7 +211,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'text',
     deadlineHours: 48, status: 'active',
     categories: ['Palmistry', 'General'],
-    languages: ['English', 'Tamil', 'Telugu'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 12 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 18 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 13 * 86400000).toISOString()
@@ -225,7 +225,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'text',
     deadlineHours: 48, status: 'active',
     categories: ['Tarot', 'General'],
-    languages: ['English', 'Tamil'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 6 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 24 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 7 * 86400000).toISOString()
@@ -239,7 +239,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'voice',
     deadlineHours: 72, status: 'active',
     categories: ['Kundali', 'Manglik', 'Marriage'],
-    languages: ['Hindi', 'English'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 5 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 25 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 6 * 86400000).toISOString()
@@ -253,7 +253,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'voice',
     deadlineHours: 96, status: 'active',
     categories: ['Marriage', 'Compatibility', 'Kundali'],
-    languages: ['Hindi', 'English', 'Tamil'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 3 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 27 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 4 * 86400000).toISOString()
@@ -267,7 +267,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'voice',
     deadlineHours: 72, status: 'active',
     categories: ['Marriage', 'Matching', 'Jyotish'],
-    languages: ['Hindi', 'English'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 7 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 23 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 8 * 86400000).toISOString()
@@ -281,7 +281,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'text',
     deadlineHours: 48, status: 'active',
     categories: ['Muhurtha', 'Ceremonies', 'Timing'],
-    languages: ['Hindi', 'Tamil', 'Telugu'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 4 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 26 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 5 * 86400000).toISOString()
@@ -295,7 +295,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'voice',
     deadlineHours: 48, status: 'active',
     categories: ['Tarot', 'Life Path', 'Guidance'],
-    languages: ['English', 'Hindi'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 2 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 28 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 3 * 86400000).toISOString()
@@ -309,7 +309,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'voice',
     deadlineHours: 72, status: 'active',
     categories: ['Love', 'Tarot', 'Relationship'],
-    languages: ['English'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 6 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 24 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 7 * 86400000).toISOString()
@@ -323,7 +323,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'voice',
     deadlineHours: 96, status: 'active',
     categories: ['Nadi', 'Destiny', 'Prediction'],
-    languages: ['Tamil', 'English', 'Hindi'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 10 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 20 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 11 * 86400000).toISOString()
@@ -337,7 +337,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'voice',
     deadlineHours: 72, status: 'active',
     categories: ['Past Life', 'Karma', 'Spiritual'],
-    languages: ['Hindi', 'English'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 4 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 26 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 5 * 86400000).toISOString()
@@ -351,7 +351,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'text',
     deadlineHours: 36, status: 'active',
     categories: ['Lal Kitab', 'Remedies', 'General'],
-    languages: ['Hindi', 'English', 'Urdu'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 8 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 22 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 9 * 86400000).toISOString()
@@ -365,7 +365,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'text',
     deadlineHours: 48, status: 'active',
     categories: ['Gemstone', 'Remedies', 'Vedic'],
-    languages: ['Hindi', 'English'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 3 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 27 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 4 * 86400000).toISOString()
@@ -379,7 +379,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'voice',
     deadlineHours: 72, status: 'active',
     categories: ['Vastu', 'Home', 'Office'],
-    languages: ['Hindi', 'English', 'Telugu'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 6 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 24 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 7 * 86400000).toISOString()
@@ -393,7 +393,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'text',
     deadlineHours: 48, status: 'active',
     categories: ['Yantra', 'Spiritual', 'Remedies'],
-    languages: ['Hindi', 'English'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 2 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 28 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 3 * 86400000).toISOString()
@@ -407,7 +407,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'voice',
     deadlineHours: 72, status: 'active',
     categories: ['Natal Chart', 'Personality', 'Western'],
-    languages: ['English'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 4 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 26 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 5 * 86400000).toISOString()
@@ -421,7 +421,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'text',
     deadlineHours: 48, status: 'active',
     categories: ['Transits', 'Forecast', 'Western'],
-    languages: ['English', 'Hindi'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 5 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 25 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 6 * 86400000).toISOString()
@@ -435,7 +435,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'text',
     deadlineHours: 36, status: 'active',
     categories: ['KP', 'Horary', 'Prashna'],
-    languages: ['Tamil', 'English', 'Hindi'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 6 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 24 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 7 * 86400000).toISOString()
@@ -449,7 +449,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'voice',
     deadlineHours: 72, status: 'active',
     categories: ['Property', 'Investment', 'KP'],
-    languages: ['English', 'Tamil'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 3 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 27 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 4 * 86400000).toISOString()
@@ -463,7 +463,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'voice',
     deadlineHours: 72, status: 'active',
     categories: ['Health', 'Medical', 'Healing'],
-    languages: ['Hindi', 'English', 'Tamil'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 5 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 25 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 6 * 86400000).toISOString()
@@ -477,7 +477,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'text',
     deadlineHours: 48, status: 'active',
     categories: ['Ayurveda', 'Health', 'Remedies'],
-    languages: ['Hindi', 'English'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 2 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 28 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 3 * 86400000).toISOString()
@@ -491,7 +491,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'text',
     deadlineHours: 48, status: 'active',
     categories: ['Nakshatra', 'Dasha', 'Tamil'],
-    languages: ['Tamil', 'English'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 7 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 23 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 8 * 86400000).toISOString()
@@ -505,7 +505,7 @@ export const campaigns = [
     submissionMode: 'text', answerMode: 'text',
     deadlineHours: 36, status: 'active',
     categories: ['Tamil', 'Jyotish', 'General'],
-    languages: ['Tamil'],
+    languages: ['English', 'Tamil', 'Tanglish'],
     startAt: new Date(now.getTime() - 4 * 86400000).toISOString(),
     endAt: new Date(now.getTime() + 26 * 86400000).toISOString(),
     createdAt: new Date(now.getTime() - 5 * 86400000).toISOString()
