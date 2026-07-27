@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useData } from '../../data/DataContext';
 import { useToast } from '../../contexts/ToastContext';
 import { useNotifications, NOTIF_TYPES } from '../../contexts/NotificationContext';
+import ModalPortal from '../ui/ModalPortal';
 
 const STATUS_MAP = { open: 'tag-red', astrologer_reviewing: 'tag-yellow', astrologer_responded: 'tag-blue', user_reply: 'tag-purple', escalated: 'tag-red', platform_reviewing: 'tag-purple', resolved: 'tag-green', refunded: 'tag-green', rejected: 'tag-gray', closed: 'tag-gray' };
 
@@ -46,6 +47,7 @@ export default function PlatformDisputes() {
   const sendMessage = () => {
     if (!newMsg.trim()) return;
     addDisputeMessage(selected.id, 'platform', 'adm-1', 'Platform', newMsg.trim());
+    addNotification(NOTIF_TYPES.DISPUTE_RAISED, 'Platform Message on Dispute', 'Platform sent a new message on dispute #' + selected.questionCode, ['user', 'astrologer'], { tab: 'disputes' });
     setNewMsg('');
   };
 
@@ -104,7 +106,7 @@ export default function PlatformDisputes() {
       </div>
 
       {selected && (
-        <div className="modal-overlay" onClick={() => setSelected(null)}>
+        <ModalPortal onClose={() => setSelected(null)}>
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '700px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
               <h2>#{selected.questionCode}</h2>
@@ -184,7 +186,7 @@ export default function PlatformDisputes() {
               <button className="btn btn-secondary" onClick={() => setSelected(null)}>Close</button>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
     </div>
   );

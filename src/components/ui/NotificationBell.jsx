@@ -48,7 +48,7 @@ export default function NotificationBell({ actor, onNavigate }) {
           position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: '360px',
           maxHeight: '420px', overflowY: 'auto', background: 'var(--bg-card)',
           border: '1px solid var(--line)', borderRadius: 'var(--radius-md)',
-          boxShadow: 'var(--shadow-lg)', zIndex: 300,
+          boxShadow: 'var(--shadow-lg)', zIndex: 9999,
           backdropFilter: 'blur(12px)',
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1rem', borderBottom: '1px solid var(--line)' }}>
@@ -64,7 +64,7 @@ export default function NotificationBell({ actor, onNavigate }) {
               No notifications yet
             </div>
           ) : (
-            myNotifications.map(n => (
+            myNotifications.map((n, idx) => (
               <div key={n.id} onClick={() => handleClickNotif(n)}
                 style={{
                   display: 'flex', gap: '0.6rem', padding: '0.7rem 1rem', cursor: 'pointer',
@@ -74,6 +74,7 @@ export default function NotificationBell({ actor, onNavigate }) {
                 onMouseEnter={e => e.currentTarget.style.background = 'rgba(92,59,139,0.1)'}
                 onMouseLeave={e => e.currentTarget.style.background = n.read ? 'transparent' : 'rgba(92,59,139,0.06)'}
               >
+                <span style={{ fontSize: '0.7rem', color: '#999', minWidth: '18px', textAlign: 'right', lineHeight: '1.6rem' }}>{idx + 1}.</span>
                 <span style={{ fontSize: '1.2rem', lineHeight: 1.2 }}>{n.icon}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: n.read ? 400 : 600, fontSize: '0.8rem', color: 'var(--ink)' }}>{n.title}</div>

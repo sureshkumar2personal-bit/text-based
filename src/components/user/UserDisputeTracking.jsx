@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useData } from '../../data/DataContext';
 import { useNotifications, NOTIF_TYPES } from '../../contexts/NotificationContext';
+import ModalPortal from '../ui/ModalPortal';
 
 const DISPUTE_TIMELINE_STAGES = [
   'Dispute Raised',
@@ -34,6 +35,7 @@ export default function UserDisputeTracking() {
   const sendMessage = () => {
     if (!newMsg.trim()) return;
     addDisputeMessage(selected.id, 'user', 'u-1', 'Priya Sharma', newMsg.trim());
+    addNotification(NOTIF_TYPES.DISPUTE_RAISED, 'New Message on Dispute', 'User sent a new message on dispute #' + selected.questionCode, ['astrologer', 'platform'], { tab: 'disputes' });
     setNewMsg('');
   };
 
@@ -78,7 +80,7 @@ export default function UserDisputeTracking() {
       </div>
 
       {selected && (
-        <div className="modal-overlay" onClick={() => setSelected(null)}>
+        <ModalPortal onClose={() => setSelected(null)}>
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '650px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem' }}>
               <h2>#{selected.questionCode}</h2>
@@ -142,7 +144,7 @@ export default function UserDisputeTracking() {
               <button className="btn btn-secondary" onClick={() => setSelected(null)}>Close</button>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
     </div>
   );

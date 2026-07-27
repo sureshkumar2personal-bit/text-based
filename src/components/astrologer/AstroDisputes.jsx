@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useData } from '../../data/DataContext';
 import { useToast } from '../../contexts/ToastContext';
 import { useNotifications, NOTIF_TYPES } from '../../contexts/NotificationContext';
+import ModalPortal from '../ui/ModalPortal';
 
 const STATUS_MAP = { open: 'tag-red', astrologer_reviewing: 'tag-yellow', astrologer_responded: 'tag-blue', user_reply: 'tag-purple', escalated: 'tag-red', platform_reviewing: 'tag-purple', resolved: 'tag-green', refunded: 'tag-green', rejected: 'tag-gray', closed: 'tag-gray' };
 
@@ -17,6 +18,8 @@ export default function AstroDisputes({ astrologerId }) {
 
   const markReviewing = (id) => {
     updateDisputeStatus(id, { status: 'astrologer_reviewing' });
+    const d = disputes.find(x => x.id === id);
+    if (d) addNotification(NOTIF_TYPES.DISPUTE_RAISED, 'Dispute Being Reviewed', 'Your dispute #' + d.questionCode + ' is now being reviewed by the astrologer', 'user', { tab: 'dispute-tracking' });
   };
 
   const acceptDispute = (d) => {
@@ -94,7 +97,7 @@ export default function AstroDisputes({ astrologerId }) {
       )}
 
       {selected && (
-        <div className="modal-overlay" onClick={() => setSelected(null)}>
+        <ModalPortal onClose={() => setSelected(null)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <h2>Respond to Dispute</h2>
             <div style={{ background: 'var(--bg-elevated)', color: 'var(--text-on-elevated)', padding: '0.8rem', borderRadius: '6px', marginBottom: '0.8rem' }}>
@@ -121,7 +124,7 @@ export default function AstroDisputes({ astrologerId }) {
               <button className="btn btn-primary" onClick={submitResponse}>Submit Response</button>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
     </div>
   );

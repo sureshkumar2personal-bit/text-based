@@ -32,7 +32,7 @@ body {
   border-bottom: 1px solid var(--line);
   padding: 1rem 1.5rem;
   position: sticky;
-  top: 0; z-index: 100;
+  top: 0; z-index: 10;
   max-width: 1180px;
   margin: 0 auto;
   width: 100%;
@@ -249,20 +249,308 @@ tbody tr:hover td { background: #faf8f5; }
 .value-down { color: #c0392b; }
 
 /* Modal / Overlay */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 200; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9996; }
 .modal {
+  z-index: 9998;
   background: #fff;
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 1.5rem;
   max-width: 740px;
   width: 92%;
-  max-height: 60vh;
+  max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 20px 60px #2c17301a;
 }
 .modal h2 { font-family: 'Playfair Display', serif; font-weight: 500; margin-bottom: 1rem; }
 .modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem; }
+
+/* Body-level portal used by every application popup */
+.modal-overlay.modal-portal-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  box-sizing: border-box;
+}
+.modal-portal-overlay > .modal {
+  width: min(740px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  margin: 0;
+  padding: 1.5rem;
+  border-color: rgba(92, 59, 139, 0.16);
+  box-shadow: 0 28px 80px rgba(36, 22, 51, 0.28);
+}
+.modal-portal-overlay > .modal > h2 {
+  padding-bottom: 0.85rem;
+  margin-bottom: 1.2rem;
+  border-bottom: 1px solid var(--line);
+  font-size: 1.4rem;
+  line-height: 1.25;
+}
+.modal-portal-overlay .form-group {
+  margin-bottom: 1rem;
+}
+.modal-portal-overlay .form-group label {
+  margin-bottom: 0.4rem;
+  color: var(--ink);
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.modal-portal-overlay .form-group input,
+.modal-portal-overlay .form-group select,
+.modal-portal-overlay .form-group textarea {
+  min-height: 44px;
+  padding: 0.68rem 0.8rem;
+  border-color: #d8d0df;
+  border-radius: 10px;
+  line-height: 1.45;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+.modal-portal-overlay .form-group textarea {
+  min-height: 108px;
+}
+.modal-portal-overlay .form-group input::placeholder,
+.modal-portal-overlay .form-group textarea::placeholder {
+  color: #a69dad;
+}
+.modal-portal-overlay .row {
+  gap: 0.9rem;
+  align-items: flex-start;
+}
+.modal-portal-overlay .modal-actions {
+  position: sticky;
+  bottom: -1.5rem;
+  z-index: 3;
+  gap: 0.65rem;
+  padding: 1rem 0 0;
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--line);
+  background: inherit;
+}
+.modal-portal-overlay .modal-actions .btn {
+  min-height: 42px;
+  min-width: 108px;
+}
+
+/* Campaign editor */
+.campaign-form-modal .form-group { margin-bottom: 0.8rem; }
+.campaign-form-section-title {
+  padding-bottom: 0.35rem;
+  margin: 0.7rem 0 0.65rem;
+  border-bottom: 2px solid var(--purple);
+  color: var(--purple);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.campaign-form-modal > h2 + .campaign-form-section-title { margin-top: 0; }
+.campaign-form-modal .character-count {
+  float: right;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+.campaign-field-error {
+  margin-top: 0.35rem;
+  color: #b44040;
+  font-size: 0.7rem;
+  line-height: 1.4;
+}
+.campaign-allocation-error { margin: -0.25rem 0 0.45rem; }
+.campaign-allocation-status {
+  padding: 0.55rem 0.7rem;
+  margin: -0.1rem 0 0.75rem;
+  border-radius: 8px;
+  background: #f5f1eb;
+  color: #6e6573;
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+.campaign-allocation-status.is-complete {
+  background: #eef7ee;
+  color: #3a7a3a;
+}
+.campaign-allocation-status.is-over {
+  background: #fef2f2;
+  color: #b44040;
+}
+.campaign-form-modal input[aria-invalid="true"] { border-color: #c96868; }
+
+/* Astrology profile editor */
+.astrology-profile-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+  background: rgba(27, 18, 38, 0.58);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  z-index: 99999;
+}
+.astrology-profile-modal {
+  width: min(760px, calc(100vw - 32px));
+  max-width: 760px;
+  max-height: calc(100dvh - 32px);
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 18px;
+  border-color: rgba(92, 59, 139, 0.16);
+  box-shadow: 0 28px 80px rgba(36, 22, 51, 0.28);
+}
+.modal-portal-overlay > .astrology-profile-modal { padding: 0; }
+.astrology-profile-modal-header {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.5rem 1.75rem 1.25rem;
+  background: linear-gradient(135deg, #fbf9ff 0%, #f5efff 100%);
+  border-bottom: 1px solid #e8e0f1;
+}
+.astrology-profile-modal-header h2 {
+  margin: 0.2rem 0 0.35rem;
+  color: var(--ink);
+  font-size: 1.55rem;
+  line-height: 1.2;
+}
+.astrology-profile-modal-header p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+.astrology-profile-modal-kicker {
+  color: var(--purple);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.astrology-profile-modal-close {
+  display: grid;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  padding: 0 0 2px;
+  border: 1px solid #ddd3e9;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.75);
+  color: #6e6573;
+  font: 400 1.5rem/1 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+.astrology-profile-modal-close:hover {
+  border-color: var(--purple);
+  background: #fff;
+  color: var(--purple);
+  transform: rotate(4deg);
+}
+.astrology-profile-modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 1.4rem 1.75rem 0.5rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+.astrology-profile-section {
+  padding: 0.2rem 0 1.25rem;
+  margin-bottom: 1.2rem;
+  border-bottom: 1px solid var(--line);
+}
+.astrology-profile-section:last-child { margin-bottom: 0; border-bottom: 0; }
+.astrology-profile-section-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  margin-bottom: 0.9rem;
+}
+.astrology-profile-section-heading > span {
+  display: grid;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 9px;
+  background: #f0e9fa;
+  color: var(--purple);
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+.astrology-profile-section-heading h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.astrology-profile-section-heading p {
+  margin: 0.15rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+.astrology-profile-modal .form-group { margin-bottom: 0.75rem; }
+.astrology-profile-modal .form-group label { margin-bottom: 0.35rem; }
+.astrology-profile-modal .form-group input,
+.astrology-profile-modal .form-group select {
+  min-height: 42px;
+  border-radius: 9px;
+  background: #fff;
+}
+.astrology-profile-upload {
+  padding: 1.15rem;
+  border: 1.5px dashed #cfc1df;
+  border-radius: 12px;
+  background: #fcfaff;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+.astrology-profile-upload:hover,
+.astrology-profile-upload.is-dragging {
+  border-color: var(--purple);
+  background: #f5effd;
+}
+.astrology-profile-upload-divider {
+  padding-top: 0.45rem;
+  margin-top: 0.45rem;
+  border-top: 1px dashed #ddd3e9;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+}
+.astrology-profile-modal-actions {
+  position: static;
+  bottom: auto;
+  flex: 0 0 auto;
+  padding: 1rem 1.75rem;
+  margin: 0;
+  border-top: 1px solid #e8e0f1;
+  background: #fff;
+  box-shadow: 0 -8px 24px rgba(44, 23, 48, 0.04);
+}
+.astrology-profile-modal-actions .btn { min-width: 112px; justify-content: center; }
 
 /* Utility */
 .empty { color: #817987; text-align: center; padding: 2rem; font-size: 0.9rem; }
@@ -452,7 +740,7 @@ body {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 9998;
+  z-index: 9995;
   overflow: hidden;
 }
 .confetti-piece {
@@ -686,6 +974,11 @@ tbody tr:hover td { background: rgba(92, 59, 139, 0.03); }
   50% { box-shadow: 0 0 0 6px rgba(92, 59, 139, 0.08); }
 }
 
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.2); }
+}
+
 /* Message thread refinement */
 .msg-thread { scrollbar-width: thin; }
 .msg { line-height: 1.5; position: relative; }
@@ -772,6 +1065,29 @@ tbody tr:hover td { background: rgba(92, 59, 139, 0.03); }
   background: #1a1530;
   border-color: #2a2440;
 }
+[data-theme="dark"] .astrology-profile-modal-header {
+  background: linear-gradient(135deg, #211a39 0%, #19142d 100%);
+  border-color: #302845;
+}
+[data-theme="dark"] .astrology-profile-modal-close,
+[data-theme="dark"] .astrology-profile-modal-actions {
+  background: #1a1530;
+  border-color: #302845;
+}
+[data-theme="dark"] .astrology-profile-modal-close { color: #bca3e0; }
+[data-theme="dark"] .astrology-profile-section { border-color: #302845; }
+[data-theme="dark"] .astrology-profile-section-heading > span {
+  background: rgba(155, 111, 212, 0.16);
+  color: #c8a8ff;
+}
+[data-theme="dark"] .astrology-profile-upload {
+  background: #16122a;
+  border-color: #443658;
+}
+[data-theme="dark"] .astrology-profile-upload:hover,
+[data-theme="dark"] .astrology-profile-upload.is-dragging { background: #211a39; }
+[data-theme="dark"] .astrology-profile-modal .form-group input,
+[data-theme="dark"] .astrology-profile-modal .form-group select { background: #16122a; }
 [data-theme="dark"] .tag-green { background: rgba(39, 174, 96, 0.12); color: #5ddb8a; }
 [data-theme="dark"] .tag-yellow { background: rgba(219, 154, 64, 0.12); color: #f0c060; }
 [data-theme="dark"] .tag-red { background: rgba(192, 57, 43, 0.12); color: #f08070; }
@@ -857,6 +1173,32 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   html { font-size: 14px; }
   .card { padding: 1rem; }
   .modal { padding: 1rem; }
+  .modal-portal-overlay > .modal { padding: 1rem; }
+  .modal-portal-overlay .row { flex-direction: column; gap: 0; }
+  .modal-portal-overlay .row > * { width: 100%; }
+  .modal-portal-overlay .modal-actions {
+    bottom: -1rem;
+    flex-wrap: wrap-reverse;
+  }
+  .modal-portal-overlay .modal-actions .btn { flex: 1; }
+  .astrology-profile-overlay { padding: 16px; align-items: center; }
+  .astrology-profile-modal {
+    width: min(760px, calc(100vw - 32px));
+    min-height: 0;
+    max-height: calc(100dvh - 32px);
+    margin: 0;
+    padding: 0;
+    border-radius: 14px;
+  }
+  .modal-portal-overlay > .astrology-profile-modal { padding: 0; }
+  .astrology-profile-modal-header { padding: 1.2rem 1rem 1rem; }
+  .astrology-profile-modal-header h2 { font-size: 1.35rem; }
+  .astrology-profile-modal-body {
+    min-height: 0;
+    padding: 1.1rem 1rem 0.25rem;
+  }
+  .astrology-profile-modal-actions { position: static; bottom: auto; padding: 0.85rem 1rem; }
+  .astrology-profile-modal-actions .btn { flex: 1; min-width: 0; }
   .app-header { padding: 0.5rem 0.75rem; }
   .actor-btn { padding: 0.3rem 0.6rem; font-size: 0.72rem; }
   .tab { padding: 0.4rem 0.8rem; font-size: 0.75rem; }

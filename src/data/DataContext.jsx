@@ -224,6 +224,10 @@ export function DataProvider({ children }) {
     return camp;
   };
 
+  const deleteCampaign = (cId) => {
+    setCampaigns(prev => prev.filter(c => c.id !== cId));
+  };
+
   const addAstrologyProfile = (profile) => {
     setAstrologyProfiles(prev => [...prev, profile]);
   };
@@ -270,7 +274,7 @@ export function DataProvider({ children }) {
     allAstrologers: initialAstrologers, getAstrologerName,
     addPurchase, addTransaction, addQuestion, updateQuestionStatus, addAnswer,
     addDispute, updateDisputeStatus, addDisputeMessage,
-    updateCampaign, addCampaign,
+    updateCampaign, addCampaign, deleteCampaign,
     addAstrologyProfile, updateAstrologyProfile, deleteAstrologyProfile, setDefaultProfile,
     addRating, addFollowUpQuestion, updateAstroSettings, walletTopUp, resolveDispute,
     getAstrologerWallet, getAstrologerWalletTransactions, addAstrologerTransaction,

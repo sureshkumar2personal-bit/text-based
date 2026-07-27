@@ -3,6 +3,7 @@ import { useData } from '../../data/DataContext';
 import { useToast } from '../../contexts/ToastContext';
 import { useNotifications, NOTIF_TYPES } from '../../contexts/NotificationContext';
 import WalletView from '../ui/WalletView';
+import ModalPortal from '../ui/ModalPortal';
 
 export default function UserWallet() {
   const { wallet, walletTransactions, addTransaction } = useData();
@@ -30,7 +31,7 @@ export default function UserWallet() {
       />
 
       {showTopUp && (
-        <div className="modal-overlay" onClick={() => setShowTopUp(false)}>
+        <ModalPortal onClose={() => setShowTopUp(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <h2>💳 Top Up Wallet</h2>
             <div style={{ textAlign: 'center', margin: '1rem 0' }}>
@@ -50,7 +51,7 @@ export default function UserWallet() {
               <button className="btn btn-success" onClick={handleTopUp} disabled={topUpAmount <= 0}>Add ₹{topUpAmount}</button>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
     </div>
   );

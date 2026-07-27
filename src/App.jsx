@@ -12,7 +12,6 @@ import AstroDisputes from './components/astrologer/AstroDisputes';
 import AstroSales from './components/astrologer/AstroSales';
 
 import UserQuestions from './components/user/UserQuestions';
-import UserPurchase from './components/user/UserPurchase';
 import UserAskQuestion from './components/user/UserAskQuestion';
 import UserTracking from './components/user/UserTracking';
 import UserRaiseDispute from './components/user/UserRaiseDispute';
@@ -45,13 +44,12 @@ const TABS = {
   user: [
     { id: 'dashboard', label: 'Dashboard' },
     { id: 'questions', label: 'My Questions' },
-    { id: 'purchase', label: 'Purchase' },
     { id: 'ask', label: 'Ask Question' },
     { id: 'wallet', label: 'Wallet' },
     { id: 'tracking', label: 'Tracking' },
     { id: 'raise-dispute', label: 'Raise Dispute' },
     { id: 'dispute-tracking', label: 'Dispute Tracking' },
-    { id: 'astrology-profiles', label: 'Astrology Profiles' },
+    { id: 'astrology-profiles', label: 'My Profile' },
     { id: 'ratings', label: 'Ratings & Reviews' }
   ],
   platform: [
@@ -164,8 +162,7 @@ function AppContent() {
         {actor === 'user' && (
           <>
             {tab === 'dashboard' && <UserDashboard onNavigate={handleNavigate} />}
-            {tab === 'questions' && <UserQuestions key={'q-' + navFilter} filter={navFilter} onNavigate={handleNavigate} />}
-            {tab === 'purchase' && <UserPurchase onPurchaseSuccess={triggerConfetti} />}
+            {tab === 'questions' && <UserQuestions key={'q-' + navFilter} filter={navFilter} onNavigate={handleNavigate} onPurchaseSuccess={triggerConfetti} />}
             {tab === 'ask' && <UserAskQuestion key={'ask-' + preselectPurchase} onAskSuccess={triggerConfetti} preselectId={preselectPurchase} />}
             {tab === 'wallet' && <UserWallet />}
             {tab === 'tracking' && <UserTracking key={'tr-' + navFilter} filter={navFilter} onNavigate={handleNavigate} />}

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useData } from '../../data/DataContext';
+import ModalPortal from '../ui/ModalPortal';
 
 const TIMELINE_STAGES = ['Purchased', 'Question Submitted', 'Received by Astrologer', 'Under Review', 'Answered'];
 const STATUS_ORDER = ['question_pending', 'submitted', 'received_by_astrologer', 'under_review', 'answered', 'completed'];
@@ -58,7 +59,7 @@ export default function UserTracking({ filter, onNavigate }) {
       </div>
 
       {selected && (
-        <div className="modal-overlay" onClick={() => setSelected(null)}>
+        <ModalPortal onClose={() => setSelected(null)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <h2>Question Details</h2>
             <div className="card" style={{ padding: '1rem', marginBottom: '0.8rem' }}>
@@ -112,7 +113,7 @@ export default function UserTracking({ filter, onNavigate }) {
               <button className="btn btn-secondary" onClick={() => setSelected(null)}>Close</button>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
     </div>
   );

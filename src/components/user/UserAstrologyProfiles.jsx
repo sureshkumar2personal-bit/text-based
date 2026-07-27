@@ -1,13 +1,15 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useData } from '../../data/DataContext';
 import { raasiList, nakshatraList, relationshipOptions } from '../../data/mockData';
 import { useToast } from '../../contexts/ToastContext';
+import ModalPortal from '../ui/ModalPortal';
 
 const EMPTY_FORM = {
   profileName: '', relationship: 'self', gender: '',
   dateOfBirth: '', birthTime: '', birthPlace: '',
   latitude: '', longitude: '', timezone: 'Asia/Kolkata',
-  rasi: '', nakshatra: '', pada: 1, lagna: ''
+  rasi: '', nakshatra: '', pada: 1, lagna: '',
+  mobile: '', email: '', horoscopeFiles: []
 };
 
 export default function UserAstrologyProfiles() {
@@ -16,6 +18,7 @@ export default function UserAstrologyProfiles() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ ...EMPTY_FORM });
+  const uploadRef = useRef(null);
 
   const openNew = () => {
     setEditing(null);
@@ -29,7 +32,8 @@ export default function UserAstrologyProfiles() {
       profileName: p.profileName, relationship: p.relationship, gender: p.gender,
       dateOfBirth: p.dateOfBirth, birthTime: p.birthTime, birthPlace: p.birthPlace,
       latitude: String(p.latitude), longitude: String(p.longitude), timezone: p.timezone,
-      rasi: p.rasi, nakshatra: p.nakshatra, pada: p.pada, lagna: p.lagna
+      rasi: p.rasi, nakshatra: p.nakshatra, pada: p.pada, lagna: p.lagna,
+      mobile: p.mobile || '', email: p.email || '', horoscopeFiles: p.horoscopeFiles || []
     });
     setShowForm(true);
   };
@@ -105,6 +109,17 @@ export default function UserAstrologyProfiles() {
                 <div><span style={{ color: '#817987' }}>Nakshatra</span><br /><strong style={{ color: '#5c3b8b' }}>{p.nakshatra}</strong></div>
                 <div><span style={{ color: '#817987' }}>Lagna</span><br />{p.lagna || '—'}</div>
               </div>
+              {(p.mobile || p.email) && (
+                <div className="row" style={{ gap: '0.5rem', marginTop: '0.3rem' }}>
+                  {p.mobile && <div><span style={{ color: '#817987' }}>📱 Mobile</span><br />{p.mobile}</div>}
+                  {p.email && <div><span style={{ color: '#817987' }}>📧 Email</span><br />{p.email}</div>}
+                </div>
+              )}
+              {p.horoscopeFiles?.length > 0 && (
+                <div style={{ marginTop: '0.3rem', fontSize: '0.72rem', color: 'var(--purple)' }}>
+                  📎 {p.horoscopeFiles.length} horoscope file(s)
+                </div>
+              )}
             </div>
 
             <div style={{ marginTop: '0.6rem', display: 'flex', gap: '0.3rem', borderTop: '1px solid var(--line)', paddingTop: '0.6rem' }}>
@@ -117,11 +132,37 @@ export default function UserAstrologyProfiles() {
       </div>
 
       {showForm && (
-        <div className="modal-overlay" onClick={() => setShowForm(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '700px' }}>
-            <h2>{editing ? 'Edit Profile' : 'New Astrology Profile'}</h2>
+        <ModalPortal className="astrology-profile-overlay" onClose={() => setShowForm(false)}>
+          <div
+            className="modal astrology-profile-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="astrology-profile-modal-title"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="astrology-profile-modal-header">
+              <div>
+                <span className="astrology-profile-modal-kicker">Astrology profile</span>
+                <h2 id="astrology-profile-modal-title">{editing ? 'Edit profile details' : 'Create a new profile'}</h2>
+                <p>Keep these details accurate for more reliable chart calculations.</p>
+              </div>
+              <button
+                type="button"
+                className="astrology-profile-modal-close"
+                aria-label="Close profile form"
+                onClick={() => setShowForm(false)}
+              >
+                ×
+              </button>
+            </div>
 
-            <div className="row">
+            <div className="astrology-profile-modal-body">
+            <div className="astrology-profile-section">
+              <div className="astrology-profile-section-heading">
+                <span>01</span>
+                <div><h3>Basic information</h3><p>How this profile should be identified.</p></div>
+              </div>
+              <div className="row">
               <div className="form-group">
                 <label>Profile Name *</label>
                 <input value={form.profileName} onChange={e => setForm({...form, profileName: e.target.value})} placeholder="e.g. Myself, My Son" />
@@ -142,7 +183,13 @@ export default function UserAstrologyProfiles() {
                 </select>
               </div>
             </div>
+            </div>
 
+            <div className="astrology-profile-section">
+              <div className="astrology-profile-section-heading">
+                <span>02</span>
+                <div><h3>Birth details</h3><p>Information used to calculate the birth chart.</p></div>
+              </div>
             <div className="row">
               <div className="form-group">
                 <label>Date of Birth *</label>
@@ -197,7 +244,13 @@ export default function UserAstrologyProfiles() {
                 </select>
               </div>
             </div>
+            </div>
 
+            <div className="astrology-profile-section">
+              <div className="astrology-profile-section-heading">
+                <span>03</span>
+                <div><h3>Location & coordinates</h3><p>Optional precision details for the place of birth.</p></div>
+              </div>
             <div className="row">
               <div className="form-group">
                 <label>Latitude</label>
@@ -208,13 +261,69 @@ export default function UserAstrologyProfiles() {
                 <input type="number" step="any" value={form.longitude} onChange={e => setForm({...form, longitude: e.target.value})} placeholder="80.2707" />
               </div>
             </div>
+            </div>
 
-            <div className="modal-actions">
-              <button className="btn btn-secondary" onClick={() => setShowForm(false)}>Cancel</button>
-              <button className="btn btn-primary" onClick={handleSave}>{editing ? 'Update' : 'Create Profile'}</button>
+            <div className="astrology-profile-section">
+            <div className="astrology-profile-section-heading">
+              <span>04</span>
+              <div><h3>Contact information</h3><p>Optional details kept with this profile.</p></div>
+            </div>
+            <div className="row">
+              <div className="form-group">
+                <label>Mobile Number</label>
+                <input value={form.mobile} onChange={e => setForm({...form, mobile: e.target.value})} placeholder="+91-9876543210" />
+              </div>
+              <div className="form-group">
+                <label>Email ID</label>
+                <input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} placeholder="user@example.com" />
+              </div>
+            </div>
+            </div>
+
+            <div className="astrology-profile-section">
+            <div className="astrology-profile-section-heading">
+              <span>05</span>
+              <div><h3>Horoscope documents</h3><p>Attach existing charts for quick reference.</p></div>
+            </div>
+            <div ref={uploadRef}
+              className="astrology-profile-upload"
+              onDragOver={e => { e.preventDefault(); e.currentTarget.classList.add('is-dragging'); }}
+              onDragLeave={e => { e.currentTarget.classList.remove('is-dragging'); }}
+              onDrop={e => { e.preventDefault(); e.currentTarget.classList.remove('is-dragging'); const files = Array.from(e.dataTransfer.files); if (files.length) setForm({...form, horoscopeFiles: [...form.horoscopeFiles, ...files]}); }}>
+              <input type="file" id="horo-upload" multiple accept=".pdf,.jpg,.jpeg,.png" style={{ display: 'none' }}
+                onChange={e => {
+                  const files = Array.from(e.target.files);
+                  setForm({...form, horoscopeFiles: [...form.horoscopeFiles, ...files]});
+                  e.target.value = '';
+                }} />
+              <label htmlFor="horo-upload" style={{ cursor: 'pointer', display: 'block' }}>
+                <div style={{ fontSize: '2rem', marginBottom: '0.3rem' }}>📤</div>
+                <span style={{ color: 'var(--purple)', fontWeight: 600, fontSize: '0.85rem' }}>Click to upload horoscope</span>
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>PDF, JPG, PNG (max 5MB each)</div>
+              </label>
+              <div className="astrology-profile-upload-divider">or drag &amp; drop files here</div>
+            </div>
+            {form.horoscopeFiles.length > 0 && (
+              <div style={{ marginTop: '0.5rem' }}>
+                {form.horoscopeFiles.map((f, i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.4rem 0.6rem', background: '#fff', border: '1px solid var(--line)', borderRadius: '6px', marginBottom: '0.3rem', fontSize: '0.78rem' }}>
+                    <span>📎 {f.name}</span>
+                    <span style={{ color: 'var(--text-muted)' }}>{(f.size / 1024).toFixed(1)} KB</span>
+                    <button className="btn btn-sm btn-danger" style={{ padding: '2px 8px', fontSize: '0.65rem' }}
+                      onClick={() => setForm({...form, horoscopeFiles: form.horoscopeFiles.filter((_, fi) => fi !== i)})}>Remove</button>
+                  </div>
+                ))}
+              </div>
+            )}
+            </div>
+            </div>
+
+            <div className="modal-actions astrology-profile-modal-actions">
+              <button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>Cancel</button>
+              <button type="button" className="btn btn-primary" onClick={handleSave}>{editing ? 'Save changes' : 'Create profile'}</button>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
     </div>
   );

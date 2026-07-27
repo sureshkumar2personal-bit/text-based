@@ -42,7 +42,7 @@ export default function UserDashboard({ onNavigate }) {
         <div className="card" style={{ flex: 1.5 }}>
           <h3>Quick Actions</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
-            <button className="btn btn-primary btn-glow" onClick={() => onNavigate?.('purchase')}>
+            <button className="btn btn-primary btn-glow" onClick={() => onNavigate?.('questions')}>
               🛒 Buy a Question Slot
             </button>
             <button className="btn btn-outline" onClick={() => onNavigate?.('ask')}>

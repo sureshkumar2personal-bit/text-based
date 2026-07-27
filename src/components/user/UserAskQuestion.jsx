@@ -22,6 +22,15 @@ export default function UserAskQuestion({ onAskSuccess, preselectId }) {
   const [camp, setCamp] = useState(null);
   const uploadRef = useRef(null);
 
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordedBlob, setRecordedBlob] = useState(null);
+  const [recordedUrl, setRecordedUrl] = useState(null);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const recordingTimerRef = useRef(null);
+  const audioPlayerRef = useRef(null);
+
   useEffect(() => {
     const handler = e => {
       if (uploadRef.current?.contains(e.target)) {
@@ -34,11 +43,61 @@ export default function UserAskQuestion({ onAskSuccess, preselectId }) {
     return () => document.removeEventListener('paste', handler);
   }, []);
 
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        setRecordedBlob(blob);
+        setRecordedUrl(URL.createObjectURL(blob));
+        stream.getTracks().forEach(t => t.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      setRecordingTime(0);
+      recordingTimerRef.current = setInterval(() => setRecordingTime(prev => prev + 1), 1000);
+    } catch {
+      toast.error('Microphone access denied. Please allow microphone permission.');
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop();
+    }
+    setIsRecording(false);
+    clearInterval(recordingTimerRef.current);
+  };
+
+  const deleteRecording = () => {
+    if (recordedUrl) URL.revokeObjectURL(recordedUrl);
+    setRecordedBlob(null);
+    setRecordedUrl(null);
+    setRecordingTime(0);
+  };
+
+  useEffect(() => {
+    return () => {
+      clearInterval(recordingTimerRef.current);
+      if (recordedUrl) URL.revokeObjectURL(recordedUrl);
+    };
+  }, []);
+
   const selectPurchase = (p) => {
     setSelectedPur(p);
     const c = campaigns.find(c => c.id === p.campaignId);
     setCamp(c);
     setForm({ questionType: p.variation || 'general', category: c.categories[0], language: c.languages[0], questionText: '' });
+    deleteRecording();
     const def = astrologyProfiles.find(pr => pr.isDefault);
     if (def) {
       setProfileForm({
@@ -84,6 +143,7 @@ export default function UserAskQuestion({ onAskSuccess, preselectId }) {
       deadlineHours: camp.deadlineHours, campaignName: camp.campaignName, answerMode: camp.answerMode,
       profile: isIndividual ? { ...profileForm, uploadedFiles: undefined } : null,
       attachments: isIndividual && profileForm.uploadedFiles.length > 0 ? profileForm.uploadedFiles.map(f => ({ name: f.name, type: f.type, size: f.size })) : [],
+      voiceNote: recordedBlob ? { name: 'voice_note.webm', type: recordedBlob.type, size: recordedBlob.size } : null,
     });
 
     setTimeout(() => {
@@ -91,6 +151,7 @@ export default function UserAskQuestion({ onAskSuccess, preselectId }) {
         ...form,
         profile: isIndividual ? { ...profileForm, uploadedFiles: undefined } : null,
         attachments: isIndividual && profileForm.uploadedFiles.length > 0 ? profileForm.uploadedFiles.map(f => ({ name: f.name, type: f.type, size: f.size })) : [],
+        voiceNote: recordedBlob ? { name: 'voice_note.webm', type: recordedBlob.type, size: recordedBlob.size } : null,
         purchase: selectedPur, campaign: camp,
         questionCode: q.questionCode,
         submittedAt: new Date().toISOString()
@@ -141,6 +202,12 @@ export default function UserAskQuestion({ onAskSuccess, preselectId }) {
               {submitted.attachments.map((f, i) => (
                 <div key={i} style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>📎 {f.name} ({(f.size / 1024).toFixed(1)} KB)</div>
               ))}
+            </div>
+          )}
+          {submitted.voiceNote && (
+            <div style={{ marginTop: '0.3rem' }}>
+              <span style={{ fontWeight: 600, color: 'var(--purple)', fontSize: '0.78rem' }}>Voice Note:</span>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>🎤 {submitted.voiceNote.name} ({(submitted.voiceNote.size / 1024).toFixed(1)} KB)</div>
             </div>
           )}
           <div>Due: {new Date(Date.now() + (submitted.campaign.deadlineHours || 48) * 3600000).toLocaleString()}</div>
@@ -208,9 +275,42 @@ export default function UserAskQuestion({ onAskSuccess, preselectId }) {
           </div>
 
           <div className="form-group">
-            <label>Voice File (optional)</label>
-            <input placeholder="https://example.com/audio/question.mp3" />
-            <div className="helper">Upload a voice recording and paste the URL</div>
+            <label>Voice Note (optional)</label>
+            <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: '0 0 0.5rem' }}>Record your question by voice if you prefer not to type.</p>
+            {!recordedUrl && !isRecording && (
+              <button className="btn btn-primary" onClick={startRecording} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontSize: '1.2rem' }}>🎙️</span> Start Recording
+              </button>
+            )}
+            {isRecording && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.8rem', background: 'var(--pale)', borderRadius: '8px', border: '2px solid #f87171' }}>
+                <div style={{
+                  width: 14, height: 14, borderRadius: '50%', background: '#f87171',
+                  animation: 'pulse 1s infinite'
+                }} />
+                <span style={{ fontWeight: 600, color: '#f87171', fontSize: '0.9rem' }}>Recording...</span>
+                <span style={{ fontVariantNumeric: 'tabular-nums', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                  {String(Math.floor(recordingTime / 60)).padStart(2, '0')}:{String(recordingTime % 60).padStart(2, '0')}
+                </span>
+                <button className="btn btn-sm" onClick={stopRecording} style={{ background: '#f87171', color: '#fff', marginLeft: 'auto' }}>⏹ Stop</button>
+              </div>
+            )}
+            {recordedUrl && !isRecording && (
+              <div style={{ padding: '0.8rem', background: 'var(--pale)', borderRadius: '8px', border: '2px solid #4ade80' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                  <span style={{ fontSize: '1.2rem' }}>✅</span>
+                  <span style={{ fontWeight: 600, color: '#4ade80', fontSize: '0.85rem' }}>Voice Note Recorded</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    ({String(Math.floor(recordingTime / 60)).padStart(2, '0')}:{String(recordingTime % 60).padStart(2, '0')})
+                  </span>
+                </div>
+                <audio ref={audioPlayerRef} controls src={recordedUrl} style={{ width: '100%', height: 36, marginBottom: '0.5rem' }} />
+                <div style={{ display: 'flex', gap: '0.4rem' }}>
+                  <button className="btn btn-sm btn-secondary" onClick={startRecording}>🔄 Re-record</button>
+                  <button className="btn btn-sm btn-danger" onClick={deleteRecording}>🗑 Delete</button>
+                </div>
+              </div>
+            )}
           </div>
 
           {isIndividual && (

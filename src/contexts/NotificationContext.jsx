@@ -27,7 +27,12 @@ export function NotificationProvider({ children }) {
   const [notifications, setNotifications] = useState(() => {
     try {
       const saved = localStorage.getItem('ae_notifications');
-      return saved ? JSON.parse(saved) : [];
+      const parsed = saved ? JSON.parse(saved) : [];
+      const migrated = parsed.filter(n => n.targetRole);
+      if (migrated.length !== parsed.length) {
+        localStorage.setItem('ae_notifications', JSON.stringify(migrated));
+      }
+      return migrated;
     } catch { return []; }
   });
 

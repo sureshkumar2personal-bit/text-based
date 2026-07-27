@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useData } from '../../data/DataContext';
 import { useToast } from '../../contexts/ToastContext';
 import { useNotifications, NOTIF_TYPES } from '../../contexts/NotificationContext';
+import ModalPortal from '../ui/ModalPortal';
 
 export default function AstroQueue({ astrologerId }) {
   const { questions, answers, campaigns, addAnswer, updateQuestionStatus, allAstrologers } = useData();
@@ -112,7 +113,7 @@ export default function AstroQueue({ astrologerId }) {
       )}
 
       {selected && (
-        <div className="modal-overlay" onClick={() => setSelected(null)}>
+        <ModalPortal onClose={() => setSelected(null)}>
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '700px' }}>
             <h2>Answer Question</h2>
             <div style={{ background: 'var(--bg-elevated)', color: 'var(--text-on-elevated)', padding: '0.8rem', borderRadius: '6px', marginBottom: '1rem' }}>
@@ -176,7 +177,7 @@ export default function AstroQueue({ astrologerId }) {
               <button className="btn btn-success" onClick={submitAnswer}>Submit Answer</button>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
     </div>
   );
