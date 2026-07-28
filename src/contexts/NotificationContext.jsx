@@ -4,7 +4,7 @@ const NotificationContext = createContext(null);
 
 let notifId = 0;
 
-export const NOTIF_TYPES = {
+export const NOTIF_TYPES = {  
   PURCHASE_SUCCESS: { icon: '🛒', color: '#4ade80' },
   QUESTION_SUBMITTED: { icon: '📝', color: '#60a5fa' },
   QUESTION_ANSWERED: { icon: '✅', color: '#4ade80' },
