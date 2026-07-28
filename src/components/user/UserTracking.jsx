@@ -11,7 +11,7 @@ function getTimeline(status) {
 }
 
 export default function UserTracking({ filter, onNavigate }) {
-  const { questions, answers, allAstrologers } = useData();
+  const { questions, answers, allAstrologers, disputes } = useData();
   const myQuestions = questions.filter(q => q.userId === 'u-1');
   const filtered = filter === 'pending'
     ? myQuestions.filter(q => ['submitted', 'under_review', 'received_by_astrologer'].includes(q.status))
@@ -67,7 +67,7 @@ export default function UserTracking({ filter, onNavigate }) {
                 <div><span style={{ color: 'var(--text-muted)' }}>Code</span><br />{selected.questionCode}</div>
                 <div><span style={{ color: 'var(--text-muted)' }}>Campaign</span><br />{selected.campaignName}</div>
                 <div><span style={{ color: '#d63384' }}>Astrologer</span><br />{selected.astrologerName || allAstrologers.find(a => a.id === selected.astrologerId)?.displayName || 'Unknown'}</div>
-                <div><span style={{ color: 'var(--text-muted)' }}>Status</span><br /><span className={`tag ${selected.status === 'answered' ? 'tag-green' : 'tag-yellow'}`}>{selected.status}</span></div>
+                <div><span style={{ color: 'var(--text-muted)' }}>Status</span><br /><span className={`tag ${selected.status === 'answered' ? 'tag-green' : selected.status === 'disputed' ? 'tag-red' : 'tag-yellow'}`}>{selected.status}</span></div>
               </div>
               <div className="row">
                 <div><span style={{ color: 'var(--text-muted)' }}>Category</span><br />{selected.category}</div>
@@ -103,6 +103,29 @@ export default function UserTracking({ filter, onNavigate }) {
                   <p style={{ fontSize: '0.85rem' }}>{ans.answerText}</p>
                 </div>
               ) : <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', marginTop: '0.5rem' }}>Answer pending — due by {new Date(selected.dueAt).toLocaleString()}</p>;
+            })()}
+
+            {selected.status === 'disputed' && (() => {
+              const dispute = disputes.find(d => d.questionId === selected.id);
+              if (!dispute) return null;
+              return (
+                <div style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.15)', padding: '0.8rem', borderRadius: '6px', marginTop: '0.5rem' }}>
+                  <p style={{ fontWeight: 500, marginBottom: '0.3rem', color: '#ef4444' }}>⚠️ Dispute ({dispute.reason}):</p>
+                  <p style={{ fontSize: '0.82rem', whiteSpace: 'pre-wrap' }}>{dispute.description}</p>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+                    Disputed: {new Date(dispute.createdAt).toLocaleString()}
+                  </div>
+                  {dispute.astrologerResponse && (
+                    <div style={{ marginTop: '0.4rem', padding: '0.4rem', background: 'rgba(251, 191, 36, 0.08)', borderRadius: '4px' }}>
+                      <p style={{ fontSize: '0.78rem', color: '#fbbf24', fontWeight: 500 }}>Astrologer's Response:</p>
+                      <p style={{ fontSize: '0.78rem', whiteSpace: 'pre-wrap' }}>{dispute.astrologerResponse}</p>
+                      <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+                        Responded: {new Date(dispute.astrologerRespondedAt).toLocaleString()}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              );
             })()}
 
             <div className="modal-actions">
