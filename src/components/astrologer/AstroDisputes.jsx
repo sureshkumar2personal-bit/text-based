@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { useData } from '../../data/DataContext';
 import { useToast } from '../../contexts/ToastContext';
 import { useNotifications, NOTIF_TYPES } from '../../contexts/NotificationContext';
@@ -7,27 +7,15 @@ import ModalPortal from '../ui/ModalPortal';
 const STATUS_MAP = { open: 'tag-red', astrologer_reviewing: 'tag-yellow', astrologer_responded: 'tag-blue', user_reply: 'tag-purple', escalated: 'tag-red', platform_reviewing: 'tag-purple', resolved: 'tag-green', refunded: 'tag-green', rejected: 'tag-gray', closed: 'tag-gray' };
 
 export default function AstroDisputes({ astrologerId }) {
-  const { disputes, disputeMessages, updateDisputeStatus, addDisputeMessage, allAstrologers, questions } = useData();
+  const { disputes, disputeMessages, updateDisputeStatus, addDisputeMessage, allAstrologers, questions, answers } = useData();
   const toast = useToast();
   const { addNotification } = useNotifications();
   const myDisputes = disputes.filter(d => d.astrologerId === astrologerId);
-  const [expandedId, setExpandedId] = useState(null);
+  const [viewingD, setViewingD] = useState(null);
   const [answering, setAnswering] = useState(null);
   const [response, setResponse] = useState('');
 
   const astroName = allAstrologers.find(a => a.id === astrologerId)?.displayName || 'Dr. Arjun Nair';
-
-  const gridRef = useRef(null);
-
-  useEffect(() => {
-    const handleClick = (e) => {
-      if (expandedId && gridRef.current && !gridRef.current.contains(e.target)) {
-        setExpandedId(null);
-      }
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [expandedId]);
 
   const submitResponse = () => {
     if (!response.trim()) return toast.error('Response text is required');
@@ -70,38 +58,14 @@ export default function AstroDisputes({ astrologerId }) {
           No disputes for this astrologer.
         </div>
       ) : (
-        <div className="grid" ref={gridRef}>
+        <div className="grid">
           {myDisputes.map(d => (
             <div
               className="card"
               key={d.id}
-              style={{ position: 'relative', cursor: 'pointer' }}
-              onClick={() => setExpandedId(expandedId === d.id ? null : d.id)}
+              style={{ cursor: 'pointer' }}
+              onClick={() => setViewingD(d)}
             >
-              {expandedId === d.id && (
-                <div style={{
-                  position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: 'rgba(26, 21, 48, 0.95)', color: '#e8e3f0', padding: '1rem', borderRadius: '12px',
-                  fontSize: '0.78rem', lineHeight: 1.5, zIndex: 100,
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.3)', border: '1px solid rgba(155,111,212,0.2)',
-                  pointerEvents: 'auto', backdropFilter: 'blur(4px)',
-                }}>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontWeight: 600, marginBottom: '0.3rem', color: '#f87171' }}>⚖️ {d.questionTitle || `Dispute #${d.questionCode}`}</div>
-                    <p style={{ margin: '0.3rem 0', fontSize: '0.75rem', color: '#bca3e0' }}><strong>Reason:</strong> {d.reason?.replace(/_/g, ' ')}</p>
-                    <p style={{ margin: '0.3rem 0', fontSize: '0.75rem', color: '#bca3e0', whiteSpace: 'pre-wrap' }}>{d.description}</p>
-                    <div style={{ marginTop: '0.3rem', fontSize: '0.7rem', color: '#9a8db0' }}>
-                      User: {d.userFullName} · ₹{d.purchaseAmount} · {new Date(d.createdAt).toLocaleDateString()}
-                    </div>
-                    {d.astrologerResponse && (
-                      <div style={{ marginTop: '0.4rem', padding: '0.4rem', borderTop: '1px solid rgba(155,111,212,0.15)', fontSize: '0.72rem', color: '#60a5fa' }}>
-                        My Response: {d.astrologerResponse}
-                      </div>
-                    )}
-                    <div style={{ marginTop: '0.5rem', fontSize: '0.65rem', color: '#6e6573' }}>Click anywhere to close</div>
-                  </div>
-                </div>
-              )}
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <h3>#{d.questionCode}</h3>
                 <span className={`tag ${STATUS_MAP[d.status]}`}>{d.status}</span>
@@ -132,6 +96,63 @@ export default function AstroDisputes({ astrologerId }) {
             </div>
           ))}
         </div>
+      )}
+
+      {viewingD && (
+        <ModalPortal onClose={() => setViewingD(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '700px' }}>
+            <h2>⚖️ {viewingD.questionTitle || `Dispute #${viewingD.questionCode}`}</h2>
+
+            <div style={{ background: 'var(--bg-elevated)', color: 'var(--text-on-elevated)', padding: '0.8rem', borderRadius: '6px', marginBottom: '0.6rem' }}>
+              <p style={{ fontSize: '0.78rem', marginBottom: '0.3rem' }}><strong>Reason:</strong> {viewingD.reason?.replace(/_/g, ' ')}</p>
+              <p style={{ fontSize: '0.82rem', whiteSpace: 'pre-wrap' }}>{viewingD.description}</p>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+                User: {viewingD.userFullName} · ₹{viewingD.purchaseAmount} · {new Date(viewingD.createdAt).toLocaleDateString()}
+              </div>
+            </div>
+
+            {(() => {
+              const relQ = questions.find(q => q.id === viewingD.questionId);
+              if (!relQ) return null;
+              const relA = answers.find(a => a.questionId === viewingD.questionId);
+              return (
+                <>
+                  <div style={{ background: '#2a2555', border: '1px solid rgba(155,111,212,0.3)', padding: '0.8rem', borderRadius: '6px', marginBottom: '0.6rem' }}>
+                    <p style={{ fontWeight: 500, marginBottom: '0.3rem', color: '#fff' }}>📝 Related Question</p>
+                    <p style={{ fontSize: '0.82rem', whiteSpace: 'pre-wrap', color: '#ddd' }}>{relQ.questionText}</p>
+                    <div style={{ fontSize: '0.72rem', color: '#aaa', marginTop: '0.3rem' }}>
+                      {relQ.title} · {relQ.category} · {relQ.language}
+                    </div>
+                  </div>
+                  {relA && (
+                    <div style={{ background: 'rgba(74, 222, 128, 0.08)', border: '1px solid rgba(74, 222, 128, 0.15)', padding: '0.8rem', borderRadius: '6px', marginBottom: '0.6rem' }}>
+                      <p style={{ fontWeight: 500, marginBottom: '0.3rem', color: '#4ade80' }}>✅ Your Answer</p>
+                      {relA.answerText && <p style={{ fontSize: '0.85rem', whiteSpace: 'pre-wrap' }}>{relA.answerText}</p>}
+                      {relA.voiceUrl && <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>🎤 <a href={relA.voiceUrl} target="_blank" rel="noreferrer">Voice Answer</a></p>}
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+                        {relA.answerMode} · {new Date(relA.createdAt).toLocaleString()}
+                      </div>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
+
+            {viewingD.astrologerResponse && (
+              <div style={{ background: 'rgba(96, 165, 250, 0.08)', border: '1px solid rgba(96, 165, 250, 0.15)', padding: '0.8rem', borderRadius: '6px', marginBottom: '0.6rem' }}>
+                <p style={{ fontWeight: 500, marginBottom: '0.3rem', color: '#60a5fa' }}>My Response</p>
+                <p style={{ fontSize: '0.82rem', whiteSpace: 'pre-wrap' }}>{viewingD.astrologerResponse}</p>
+              </div>
+            )}
+
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+              Dispute ID: #{viewingD.questionCode} · Status: <span className={`tag ${STATUS_MAP[viewingD.status]}`}>{viewingD.status}</span>
+            </div>
+            <div className="modal-actions">
+              <button className="btn btn-secondary" onClick={() => setViewingD(null)}>Close</button>
+            </div>
+          </div>
+        </ModalPortal>
       )}
 
       {answering && (

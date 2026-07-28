@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { useData } from '../../data/DataContext';
 import { useToast } from '../../contexts/ToastContext';
 import { useNotifications, NOTIF_TYPES } from '../../contexts/NotificationContext';
@@ -10,7 +10,7 @@ export default function AstroQueue({ astrologerId }) {
   const { addNotification } = useNotifications();
   const queued = questions.filter(q => q.astrologerId === astrologerId);
   const [filter, setFilter] = useState('all');
-  const [expandedId, setExpandedId] = useState(null);
+  const [viewingQ, setViewingQ] = useState(null);
   const [selected, setSelected] = useState(null);
   const [answerMode, setAnswerMode] = useState('text');
   const [answerText, setAnswerText] = useState('');
@@ -41,18 +41,6 @@ export default function AstroQueue({ astrologerId }) {
     addNotification(NOTIF_TYPES.QUESTION_ANSWERED, 'Question Answered', `Your question "${selected.title || selected.questionText.slice(0, 40)}" has been answered`, 'user', { tab: 'questions' });
   };
 
-  const queueRef = useRef(null);
-
-  useEffect(() => {
-    const handleClick = (e) => {
-      if (expandedId && queueRef.current && !queueRef.current.contains(e.target)) {
-        setExpandedId(null);
-      }
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [expandedId]);
-
   const getStatusStyle = (s) => {
     if (s === 'answered') return 'tag-green';
     if (s === 'disputed') return 'tag-red';
@@ -78,35 +66,16 @@ export default function AstroQueue({ astrologerId }) {
           No questions in queue.
         </div>
       ) : (
-        <div className="grid" ref={queueRef}>
+        <div className="grid">
           {filtered.map(q => {
             const ans = allAnswers.find(a => a.questionId === q.id);
             return (
               <div
                 className="card"
                 key={q.id}
-                style={{ position: 'relative', cursor: 'pointer' }}
-                onClick={() => setExpandedId(expandedId === q.id ? null : q.id)}
+                style={{ cursor: 'pointer', minHeight: '280px', display: 'flex', flexDirection: 'column' }}
+                onClick={() => setViewingQ(q)}
               >
-                {expandedId === q.id && (
-                  <div style={{
-                    position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: 'rgba(26, 21, 48, 0.95)', color: '#e8e3f0', padding: '1rem', borderRadius: '12px',
-                    fontSize: '0.78rem', lineHeight: 1.5, zIndex: 100,
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.3)', border: '1px solid rgba(155,111,212,0.2)',
-                    pointerEvents: 'auto', backdropFilter: 'blur(4px)',
-                  }}>
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontWeight: 600, marginBottom: '0.3rem', color: '#c8a8ff' }}>📝 {q.title}</div>
-                      <p style={{ margin: '0.5rem 0', fontSize: '0.75rem', color: '#bca3e0', whiteSpace: 'pre-wrap' }}>{q.questionText}</p>
-                      <div style={{ marginTop: '0.4rem', paddingTop: '0.3rem', borderTop: '1px solid rgba(155,111,212,0.15)', fontSize: '0.7rem', color: '#9a8db0' }}>
-                        {q.category} · {q.language} · {q.questionType}
-                        {q.profile && <> · 🔮 {q.profile.rasi}</>}
-                      </div>
-                      <div style={{ marginTop: '0.5rem', fontSize: '0.65rem', color: '#6e6573' }}>Click anywhere to close</div>
-                    </div>
-                  </div>
-                )}
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span className="tag tag-blue">{q.category}</span>
                   <span className={`tag ${getStatusStyle(q.status)}`}>{q.status}</span>
@@ -122,24 +91,26 @@ export default function AstroQueue({ astrologerId }) {
                     {q.attachments?.length > 0 && <span> · 📎 {q.attachments.length} file(s)</span>}
                   </div>
                 )}
+                <div style={{ flex: 1 }} />
                 <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
                   Due: {new Date(q.dueAt).toLocaleString()} · {q.campaignName}
                 </div>
 
                 {ans && (
-                  <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'var(--bg-elevated)', borderRadius: '6px', fontSize: '0.78rem', color: 'var(--text-on-elevated)' }}>
+                  <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.15)', borderRadius: '6px', fontSize: '0.78rem', color: '#c8f0d0' }}>
                     <span className="tag tag-green" style={{ marginBottom: '3px' }}>Answered ({ans.answerMode})</span>
-                    <p style={{ marginTop: '3px' }}>{ans.answerText?.slice(0, 80)}...</p>
+                    {ans.answerText && <p style={{ marginTop: '3px', whiteSpace: 'pre-wrap' }}>{ans.answerText}</p>}
+                    {ans.voiceUrl && <p style={{ fontSize: '0.72rem', color: '#60a5fa' }}>🎤 <a href={ans.voiceUrl} target="_blank" rel="noreferrer">Voice Answer</a></p>}
                   </div>
                 )}
 
                 {q.status === 'submitted' && (
-                  <button className="btn btn-primary btn-sm" style={{ marginTop: '0.5rem', width: '100%' }} onClick={() => startReview(q.id)}>
+                  <button className="btn btn-primary btn-sm" style={{ marginTop: '0.5rem', width: '100%' }} onClick={e => { e.stopPropagation(); startReview(q.id); }}>
                     Start Review
                   </button>
                 )}
                 {q.status === 'under_review' && (
-                  <button className="btn btn-success btn-sm" style={{ marginTop: '0.5rem', width: '100%' }} onClick={() => { setSelected(q); setAnswerMode(q.answerMode); setAnswerText(''); setVoiceUrl(''); }}>
+                  <button className="btn btn-success btn-sm" style={{ marginTop: '0.5rem', width: '100%' }} onClick={e => { e.stopPropagation(); setSelected(q); setAnswerMode(q.answerMode); setAnswerText(''); setVoiceUrl(''); }}>
                     Submit Answer
                   </button>
                 )}
@@ -147,6 +118,43 @@ export default function AstroQueue({ astrologerId }) {
             );
           })}
         </div>
+      )}
+
+      {viewingQ && (
+        <ModalPortal onClose={() => setViewingQ(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '700px' }}>
+            <h2>📝 {viewingQ.title}</h2>
+            <div style={{ background: 'var(--bg-elevated)', color: 'var(--text-on-elevated)', padding: '0.8rem', borderRadius: '6px', marginBottom: '0.6rem' }}>
+              <p style={{ fontWeight: 500, marginBottom: '0.3rem' }}>Question:</p>
+              <p style={{ fontSize: '0.82rem', whiteSpace: 'pre-wrap' }}>{viewingQ.questionText}</p>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+                {viewingQ.category} · {viewingQ.language} · {viewingQ.questionType}
+                {viewingQ.profile && <> · 🔮 {viewingQ.profile.rasi}</>}
+              </div>
+            </div>
+            {(() => {
+              const vAns = allAnswers.find(a => a.questionId === viewingQ.id);
+              if (!vAns) return null;
+              return (
+                <div style={{ background: 'rgba(74, 222, 128, 0.08)', border: '1px solid rgba(74, 222, 128, 0.15)', padding: '0.8rem', borderRadius: '6px', marginBottom: '0.6rem' }}>
+                  <p style={{ fontWeight: 500, marginBottom: '0.3rem', color: '#4ade80' }}>✅ Your Answer ({vAns.answerMode}):</p>
+                  {vAns.answerText && <p style={{ fontSize: '0.85rem', whiteSpace: 'pre-wrap' }}>{vAns.answerText}</p>}
+                  {vAns.voiceUrl && <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>🎤 <a href={vAns.voiceUrl} target="_blank" rel="noreferrer">Voice Answer</a></p>}
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+                    Answered: {new Date(vAns.createdAt).toLocaleString()}
+                  </div>
+                </div>
+              );
+            })()}
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+              Status: <span className={`tag ${getStatusStyle(viewingQ.status)}`}>{viewingQ.status}</span>
+              · Due: {new Date(viewingQ.dueAt).toLocaleString()} · {viewingQ.campaignName}
+            </div>
+            <div className="modal-actions">
+              <button className="btn btn-secondary" onClick={() => setViewingQ(null)}>Close</button>
+            </div>
+          </div>
+        </ModalPortal>
       )}
 
       {selected && (
