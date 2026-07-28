@@ -40,9 +40,9 @@ export default function UserRatings() {
               <div className="card" key={q.id}>
                 <h3>{q.title}</h3>
                 <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '0.2rem 0' }}>{q.questionText.slice(0, 60)}...</p>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                  Astrologer: {q.astrologerName} · {q.category}
-                </div>
+                  <div style={{ fontSize: '0.75rem', color: '#d63384' }}>
+                    Astrologer: {q.astrologerName} · {q.category}
+                  </div>
                 {rated ? (
                   <div style={{ marginTop: '0.5rem' }}>
                     <span className="tag tag-green">✓ Rated</span>
@@ -65,6 +65,9 @@ export default function UserRatings() {
           <h2>Rate Answer</h2>
           <div style={{ background: 'var(--bg-glass)', padding: '1rem', borderRadius: '8px', marginBottom: '1rem' }}>
             <p style={{ fontWeight: 500 }}>{selected.title}</p>
+            <div style={{ fontSize: '0.72rem', color: '#d63384', marginBottom: '0.3rem' }}>
+              Astrologer: {selected.astrologerName}
+            </div>
             <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{selected.questionText}</p>
             <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
               Answer: {answers.find(a => a.questionId === selected.id)?.answerText?.slice(0, 120)}...

@@ -5,7 +5,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { useNotifications, NOTIF_TYPES } from '../../contexts/NotificationContext';
 
 export default function UserAskQuestion({ onAskSuccess, preselectId }) {
-  const { purchases, campaigns, astrologyProfiles, addQuestion } = useData();
+  const { purchases, campaigns, astrologyProfiles, allAstrologers, addQuestion } = useData();
   const toast = useToast();
   const { addNotification } = useNotifications();
   const pendingPurchases = purchases.filter(p => p.userId === 'u-1' && p.purchaseStatus === 'question_pending' && !p.questionSubmitted);
@@ -180,6 +180,7 @@ export default function UserAskQuestion({ onAskSuccess, preselectId }) {
         <div style={{ background: 'var(--pale)', padding: '1rem', borderRadius: '8px', display: 'inline-block', textAlign: 'left', margin: '0.5rem 0' }}>
           <div>Code: <strong>{submitted.questionCode}</strong></div>
           <div>Campaign: <strong>{submitted.campaign.campaignName}</strong></div>
+          <div style={{ color: '#d63384' }}>Astrologer: <strong>{submitted.astrologerName || allAstrologers.find(a => a.id === submitted.astrologerId)?.displayName || 'Unknown'}</strong></div>
           <div>Language: {submitted.language}</div>
           <div>Type: <strong>{submitted.questionType}</strong></div>
           {submitted.profile && (
@@ -225,7 +226,10 @@ export default function UserAskQuestion({ onAskSuccess, preselectId }) {
           <div className="grid">
             {pendingPurchases.map(p => (
               <div className="card" key={p.id}>
-<h3>{p.campaignName}</h3>
+                <h3>{p.campaignName}</h3>
+                <div style={{ fontSize: '0.72rem', color: '#d63384', marginBottom: '0.2rem' }}>
+                  Astrologer: {allAstrologers.find(a => a.id === p.astrologerId)?.displayName || 'Unknown'}
+                </div>
                   <div className="row" style={{ marginTop: '0.4rem' }}>
                     <div><span style={{ color: 'var(--text-muted)' }}>Price</span><br />₹{p.price}</div>
                     <div><span style={{ color: 'var(--text-muted)' }}>Code</span><br />{p.purchaseCode}</div>

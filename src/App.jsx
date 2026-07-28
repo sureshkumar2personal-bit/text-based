@@ -1,6 +1,9 @@
 import { useState, useRef } from 'react';
 import { actors } from './data/mockData';
 import { DataProvider, useData } from './data/DataContext';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { ToastProvider } from './contexts/ToastContext';
+import { NotificationProvider } from './contexts/NotificationContext';
 import ThemeToggle from './components/ui/ThemeToggle';
 import NotificationBell from './components/ui/NotificationBell';
 import Confetti from './components/ui/Confetti';
@@ -184,8 +187,14 @@ function AppContent() {
 
 export default function App() {
   return (
-    <DataProvider>
-      <AppContent />
-    </DataProvider>
+    <ThemeProvider>
+      <ToastProvider>
+        <NotificationProvider>
+          <DataProvider>
+            <AppContent />
+          </DataProvider>
+        </NotificationProvider>
+      </ToastProvider>
+    </ThemeProvider>
   );
 }

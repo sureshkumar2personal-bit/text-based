@@ -11,7 +11,7 @@ function getTimeline(status) {
 }
 
 export default function UserTracking({ filter, onNavigate }) {
-  const { questions, answers } = useData();
+  const { questions, answers, allAstrologers } = useData();
   const myQuestions = questions.filter(q => q.userId === 'u-1');
   const filtered = filter === 'pending'
     ? myQuestions.filter(q => ['submitted', 'under_review', 'received_by_astrologer'].includes(q.status))
@@ -34,7 +34,7 @@ export default function UserTracking({ filter, onNavigate }) {
                 <span className={`tag ${q.status === 'answered' || q.status === 'completed' ? 'tag-green' : q.status === 'disputed' ? 'tag-red' : 'tag-yellow'}`}>{q.status}</span>
               </div>
               <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '0.3rem 0' }}>{q.questionText.slice(0, 60)}...</p>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+              <div style={{ fontSize: '0.72rem', color: '#d63384' }}>
                 {q.category} · {q.language} · Astrologer: {q.astrologerName}
               </div>
 
@@ -66,6 +66,7 @@ export default function UserTracking({ filter, onNavigate }) {
               <div className="row" style={{ marginBottom: '0.5rem' }}>
                 <div><span style={{ color: 'var(--text-muted)' }}>Code</span><br />{selected.questionCode}</div>
                 <div><span style={{ color: 'var(--text-muted)' }}>Campaign</span><br />{selected.campaignName}</div>
+                <div><span style={{ color: '#d63384' }}>Astrologer</span><br />{selected.astrologerName || allAstrologers.find(a => a.id === selected.astrologerId)?.displayName || 'Unknown'}</div>
                 <div><span style={{ color: 'var(--text-muted)' }}>Status</span><br /><span className={`tag ${selected.status === 'answered' ? 'tag-green' : 'tag-yellow'}`}>{selected.status}</span></div>
               </div>
               <div className="row">

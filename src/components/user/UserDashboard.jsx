@@ -2,7 +2,7 @@ import { useData } from '../../data/DataContext';
 import AnimatedCounter from '../ui/AnimatedCounter';
 
 export default function UserDashboard({ onNavigate }) {
-  const { purchases, questions, wallet } = useData();
+  const { purchases, questions, wallet, allAstrologers } = useData();
 
   const myPurchases = purchases.filter(p => p.userId === 'u-1');
   const myQuestions = questions.filter(q => q.userId === 'u-1');
@@ -60,19 +60,23 @@ export default function UserDashboard({ onNavigate }) {
             {recentActivity.length === 0 ? (
               <div className="empty">No recent activity</div>
             ) : (
-              recentActivity.map((item, i) => (
+              recentActivity.map((item, i) => {
+                const astroName = item.astrologerName || allAstrologers.find(a => a.id === item.astrologerId)?.displayName;
+                return (
                 <div key={item.id || i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.4rem 0', borderBottom: '1px solid var(--line)', fontSize: '0.78rem' }}>
                   <div>
                     <span style={{ fontWeight: 600 }}>{item.campaignName || item.title || item.questionCode}</span>
                     <span style={{ color: 'var(--text-muted)', marginLeft: '0.3rem' }}>
                       {item.purchaseStatus || item.status}
                     </span>
+                    {astroName && <div style={{ fontSize: '0.68rem', color: '#d63384' }}>{astroName}</div>}
                   </div>
                   <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>
                     {new Date(item.createdAt || item.submittedAt).toLocaleDateString()}
                   </span>
                 </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>

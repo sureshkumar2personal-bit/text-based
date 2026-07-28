@@ -15,7 +15,7 @@ const DISPUTE_REASONS = [
 ];
 
 export default function UserRaiseDispute({ preselectId }) {
-  const { questions, answers, purchases, addDispute, disputes } = useData();
+  const { questions, answers, purchases, addDispute, disputes, allAstrologers } = useData();
   const toast = useToast();
   const { addNotification } = useNotifications();
   const disputedQuestionIds = new Set(disputes.filter(d => d.userId === 'u-1').map(d => d.questionId));
@@ -23,7 +23,6 @@ export default function UserRaiseDispute({ preselectId }) {
   const [selected, setSelected] = useState(null);
   const [reason, setReason] = useState('');
   const [description, setDescription] = useState('');
-  const [expectation, setExpectation] = useState('');
   const [raised, setRaised] = useState(null);
 
   useEffect(() => {
@@ -35,20 +34,19 @@ export default function UserRaiseDispute({ preselectId }) {
 
   const handleRaise = () => {
     if (!reason) return toast.error('Please select a reason');
-    if (!description.trim()) return toast.error('Please describe your issue');
+    if (reason === 'other' && !description.trim()) return toast.error('Please describe your issue');
 
     const purchase = purchases.find(p => p.questionId === selected.id);
     addDispute({
       questionId: selected.id, purchaseId: purchase?.id,
       reason, description,
-      expectedResolution: expectation,
       questionCode: selected.questionCode, questionTitle: selected.title,
       questionText: selected.questionText,
       purchaseAmount: purchase?.price || 0,
     });
 
     setTimeout(() => {
-      setRaised({ question: selected, reason, description, expectation, createdAt: new Date().toISOString(), disputeId: `disp-${Date.now()}` });
+      setRaised({ question: selected, reason, description, createdAt: new Date().toISOString(), disputeId: `disp-${Date.now()}` });
       toast.success('Dispute raised successfully!');
       addNotification(NOTIF_TYPES.DISPUTE_RAISED, 'Dispute Raised', `Dispute on "${selected.title}" — ${reason.replace(/_/g, ' ')}`, 'astrologer', { tab: 'disputes' });
     }, 300);
@@ -97,7 +95,7 @@ export default function UserRaiseDispute({ preselectId }) {
                 <div className="card" key={q.id}>
                   <h3>{q.title}</h3>
                   <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '0.2rem 0' }}>{q.questionText.slice(0, 60)}...</p>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Astrologer: {q.astrologerName}</div>
+                  <div style={{ fontSize: '0.75rem', color: '#d63384' }}>Astrologer: {q.astrologerName}</div>
                   {ans && <div style={{ fontSize: '0.72rem', color: '#555' }}>Answered: {new Date(ans.submittedAt).toLocaleDateString()}</div>}
                   <button className="btn btn-danger btn-sm" style={{ width: '100%', marginTop: '0.4rem' }} onClick={() => setSelected(q)}>Dispute This Answer</button>
                 </div>
@@ -110,6 +108,9 @@ export default function UserRaiseDispute({ preselectId }) {
           <h2>Raise Dispute</h2>
           <div style={{ background: 'var(--bg-elevated)', color: 'var(--text-on-elevated)', padding: '0.8rem', borderRadius: '6px', marginBottom: '1rem' }}>
             <p style={{ fontWeight: 500 }}>{selected.title}</p>
+            <div style={{ fontSize: '0.72rem', color: '#d63384', marginBottom: '0.3rem' }}>
+              Astrologer: {selected.astrologerName || allAstrologers.find(a => a.id === selected.astrologerId)?.displayName || 'Unknown'}
+            </div>
             <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{selected.questionText}</p>
             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
               Answer: {answers.find(a => a.questionId === selected.id)?.answerText?.slice(0, 100)}...
@@ -118,31 +119,22 @@ export default function UserRaiseDispute({ preselectId }) {
 
           <div className="form-group">
             <label>Reason for Dispute</label>
-            <select value={reason} onChange={e => setReason(e.target.value)}>
+            <select value={reason} onChange={e => { setReason(e.target.value); if (e.target.value !== 'other') setDescription(''); }}>
               <option value="">Select a reason...</option>
               {DISPUTE_REASONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
             </select>
           </div>
 
-          <div className="form-group">
-            <label>Describe your issue</label>
-            <textarea rows={4} value={description} onChange={e => setDescription(e.target.value)} placeholder="Explain why you're disputing this answer..." />
-          </div>
-
-          <div className="form-group">
-            <label>Expected Resolution (optional)</label>
-            <select value={expectation} onChange={e => setExpectation(e.target.value)}>
-              <option value="">Select resolution...</option>
-              <option value="re_answer">Re-answer (new detailed answer)</option>
-              <option value="refund">Full Refund</option>
-              <option value="partial_refund">Partial Refund</option>
-              <option value="no_action">No action needed (just feedback)</option>
-            </select>
-          </div>
+          {reason === 'other' && (
+            <div className="form-group">
+              <label>Describe your issue</label>
+              <textarea rows={4} value={description} onChange={e => setDescription(e.target.value)} placeholder="Explain why you're disputing this answer..." />
+            </div>
+          )}
 
           <div className="modal-actions">
             <button className="btn btn-secondary" onClick={() => setSelected(null)}>Back</button>
-            <button className="btn btn-danger" onClick={handleRaise} disabled={!reason || !description.trim()}>Raise Dispute</button>
+            <button className="btn btn-danger" onClick={handleRaise} disabled={!reason || (reason === 'other' && !description.trim())}>Raise Dispute</button>
           </div>
         </div>
       )}

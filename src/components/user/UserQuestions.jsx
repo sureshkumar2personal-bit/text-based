@@ -3,9 +3,10 @@ import { useData } from '../../data/DataContext';
 import { useToast } from '../../contexts/ToastContext';
 import { useNotifications, NOTIF_TYPES } from '../../contexts/NotificationContext';
 import useLocalState from '../../hooks/useLocalState';
+import ModalPortal from '../ui/ModalPortal';
 
 export default function UserQuestions({ filter, onNavigate, onPurchaseSuccess }) {
-  const { purchases, questions, answers, campaigns, wallet, addPurchase, allAstrologers } = useData();
+  const { purchases, questions, answers, campaigns, wallet, addPurchase, allAstrologers, disputes } = useData();
   const toast = useToast();
   const { addNotification } = useNotifications();
   const myPurchases = purchases.filter(p => p.userId === 'u-1');
@@ -19,6 +20,7 @@ export default function UserQuestions({ filter, onNavigate, onPurchaseSuccess })
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
   const [purchased, setPurchased] = useState(null);
+  const [viewingQ, setViewingQ] = useState(null);
   const [subscribedIds, setSubscribedIds] = useLocalState('user-subscribed-astrologers', []);
   const [subscribingLoading, setSubscribingLoading] = useState(false);
 
@@ -422,11 +424,16 @@ export default function UserQuestions({ filter, onNavigate, onPurchaseSuccess })
             </div>
           ) : (
             filteredPurchases.map(p => (
-              <div className="card" key={p.id}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <h3>{p.campaignName}</h3>
-                  <span className={`tag ${p.purchaseStatus === 'question_pending' ? 'tag-yellow' : p.purchaseStatus === 'question_submitted' ? 'tag-blue' : p.purchaseStatus === 'answered' ? 'tag-green' : 'tag-gray'}`}>{p.purchaseStatus}</span>
-                </div>
+                <div className="card" key={p.id}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <div>
+                      <h3>{p.campaignName}</h3>
+                      <div style={{ fontSize: '0.72rem', color: '#d63384' }}>
+                        Astrologer: {allAstrologers.find(a => a.id === p.astrologerId)?.displayName || 'Unknown'}
+                      </div>
+                    </div>
+                    <span className={`tag ${p.purchaseStatus === 'question_pending' ? 'tag-yellow' : p.purchaseStatus === 'question_submitted' ? 'tag-blue' : p.purchaseStatus === 'answered' ? 'tag-green' : 'tag-gray'}`}>{p.purchaseStatus}</span>
+                  </div>
                 <div className="row" style={{ marginTop: '0.4rem' }}>
                   <div><span style={{ color: 'var(--text-muted)' }}>Price</span><br />₹{p.price}</div>
                   <div><span style={{ color: 'var(--text-muted)' }}>Type</span><br /><span className="tag tag-purple" style={{ fontSize: '0.65rem' }}>{p.variation}</span></div>
@@ -457,7 +464,7 @@ export default function UserQuestions({ filter, onNavigate, onPurchaseSuccess })
             filteredQuestions.map(q => {
               const ans = answers.find(a => a.questionId === q.id);
               return (
-                <div className="card" key={q.id}>
+                <div className="card" key={q.id} style={{ cursor: 'pointer' }} onClick={() => setViewingQ(q)}>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <h3>{q.title}</h3>
                     <span className={`tag ${q.status === 'answered' ? 'tag-green' : q.status === 'disputed' ? 'tag-red' : q.status === 'submitted' ? 'tag-blue' : 'tag-yellow'}`}>{q.status}</span>
@@ -466,7 +473,7 @@ export default function UserQuestions({ filter, onNavigate, onPurchaseSuccess })
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                     {q.category} · {q.language} · {q.questionType}
                   </div>
-                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+                  <div style={{ fontSize: '0.72rem', color: '#d63384', marginTop: '0.2rem' }}>
                     Astrologer: {q.astrologerName} · {q.campaignName}
                     <br />Submitted: {new Date(q.submittedAt).toLocaleDateString()} · Due: {new Date(q.dueAt).toLocaleDateString()}
                   </div>
@@ -481,6 +488,74 @@ export default function UserQuestions({ filter, onNavigate, onPurchaseSuccess })
             })
           )}
         </div>
+      )}
+
+      {viewingQ && (
+        <ModalPortal onClose={() => setViewingQ(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '700px' }}>
+            <h2>📝 {viewingQ.title}</h2>
+
+            <div style={{ background: 'var(--bg-elevated)', color: 'var(--text-on-elevated)', padding: '0.8rem', borderRadius: '6px', marginBottom: '0.6rem' }}>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>
+                Campaign: <strong>{viewingQ.campaignName}</strong> · <span style={{ color: '#d63384' }}>Astrologer: <strong>{viewingQ.astrologerName}</strong></span>
+              </div>
+              <p style={{ fontWeight: 500, marginBottom: '0.3rem' }}>Question:</p>
+              <p style={{ fontSize: '0.82rem', whiteSpace: 'pre-wrap' }}>{viewingQ.questionText}</p>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+                {viewingQ.category} · {viewingQ.language} · {viewingQ.questionType}
+              </div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+                Submitted: {new Date(viewingQ.submittedAt || viewingQ.createdAt).toLocaleString()}
+              </div>
+            </div>
+
+            {(() => {
+              const vAns = answers.find(a => a.questionId === viewingQ.id);
+              if (!vAns) return null;
+              return (
+                <div style={{ background: 'rgba(74, 222, 128, 0.08)', border: '1px solid rgba(74, 222, 128, 0.15)', padding: '0.8rem', borderRadius: '6px', marginBottom: '0.6rem' }}>
+                  <p style={{ fontWeight: 500, marginBottom: '0.3rem', color: '#4ade80' }}>✅ Answer ({vAns.answerMode}):</p>
+                  {vAns.answerText && <p style={{ fontSize: '0.85rem', whiteSpace: 'pre-wrap' }}>{vAns.answerText}</p>}
+                  {vAns.voiceAnswerUrl && <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>🎤 <a href={vAns.voiceAnswerUrl} target="_blank" rel="noreferrer">Voice Answer</a></p>}
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+                    Answered: {new Date(vAns.submittedAt || vAns.createdAt).toLocaleString()}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {viewingQ.status === 'disputed' && (() => {
+              const dispute = disputes.find(d => d.questionId === viewingQ.id);
+              if (!dispute) return null;
+              return (
+                <div style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.15)', padding: '0.8rem', borderRadius: '6px', marginBottom: '0.6rem' }}>
+                  <p style={{ fontWeight: 500, marginBottom: '0.3rem', color: '#ef4444' }}>⚠️ Dispute ({dispute.reason}):</p>
+                  <p style={{ fontSize: '0.82rem', whiteSpace: 'pre-wrap' }}>{dispute.description}</p>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+                    Disputed: {new Date(dispute.createdAt).toLocaleString()}
+                  </div>
+                  {dispute.astrologerResponse && (
+                    <div style={{ marginTop: '0.4rem', padding: '0.4rem', background: 'rgba(251, 191, 36, 0.08)', borderRadius: '4px' }}>
+                      <p style={{ fontSize: '0.78rem', color: '#fbbf24', fontWeight: 500 }}>Astrologer's Response:</p>
+                      <p style={{ fontSize: '0.78rem', whiteSpace: 'pre-wrap' }}>{dispute.astrologerResponse}</p>
+                      <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+                        Responded: {new Date(dispute.astrologerRespondedAt).toLocaleString()}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+              Status: <span className={`tag ${viewingQ.status === 'answered' ? 'tag-green' : viewingQ.status === 'disputed' ? 'tag-red' : viewingQ.status === 'submitted' ? 'tag-blue' : 'tag-yellow'}`}>{viewingQ.status}</span>
+              · Due: {new Date(viewingQ.dueAt).toLocaleString()}
+            </div>
+            <div className="modal-actions">
+              <button className="btn btn-secondary" onClick={() => setViewingQ(null)}>Close</button>
+            </div>
+          </div>
+        </ModalPortal>
       )}
     </div>
   );

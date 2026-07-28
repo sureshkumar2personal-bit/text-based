@@ -5,7 +5,7 @@ import { useNotifications, NOTIF_TYPES } from '../../contexts/NotificationContex
 import ModalPortal from '../ui/ModalPortal';
 
 export default function AstroQueue({ astrologerId }) {
-  const { questions, answers, campaigns, addAnswer, updateQuestionStatus, allAstrologers } = useData();
+  const { questions, answers, campaigns, disputes, addAnswer, updateQuestionStatus, allAstrologers } = useData();
   const toast = useToast();
   const { addNotification } = useNotifications();
   const queued = questions.filter(q => q.astrologerId === astrologerId);
@@ -124,14 +124,22 @@ export default function AstroQueue({ astrologerId }) {
         <ModalPortal onClose={() => setViewingQ(null)}>
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '700px' }}>
             <h2>📝 {viewingQ.title}</h2>
+            
             <div style={{ background: 'var(--bg-elevated)', color: 'var(--text-on-elevated)', padding: '0.8rem', borderRadius: '6px', marginBottom: '0.6rem' }}>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>
+                Campaign: <strong>{viewingQ.campaignName}</strong>
+              </div>
               <p style={{ fontWeight: 500, marginBottom: '0.3rem' }}>Question:</p>
               <p style={{ fontSize: '0.82rem', whiteSpace: 'pre-wrap' }}>{viewingQ.questionText}</p>
               <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
                 {viewingQ.category} · {viewingQ.language} · {viewingQ.questionType}
                 {viewingQ.profile && <> · 🔮 {viewingQ.profile.rasi}</>}
               </div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+                Submitted: {new Date(viewingQ.submittedAt || viewingQ.createdAt).toLocaleString()}
+              </div>
             </div>
+
             {(() => {
               const vAns = allAnswers.find(a => a.questionId === viewingQ.id);
               if (!vAns) return null;
@@ -139,16 +147,40 @@ export default function AstroQueue({ astrologerId }) {
                 <div style={{ background: 'rgba(74, 222, 128, 0.08)', border: '1px solid rgba(74, 222, 128, 0.15)', padding: '0.8rem', borderRadius: '6px', marginBottom: '0.6rem' }}>
                   <p style={{ fontWeight: 500, marginBottom: '0.3rem', color: '#4ade80' }}>✅ Your Answer ({vAns.answerMode}):</p>
                   {vAns.answerText && <p style={{ fontSize: '0.85rem', whiteSpace: 'pre-wrap' }}>{vAns.answerText}</p>}
-                  {vAns.voiceUrl && <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>🎤 <a href={vAns.voiceUrl} target="_blank" rel="noreferrer">Voice Answer</a></p>}
+                  {vAns.voiceAnswerUrl && <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>🎤 <a href={vAns.voiceAnswerUrl} target="_blank" rel="noreferrer">Voice Answer</a></p>}
                   <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
-                    Answered: {new Date(vAns.createdAt).toLocaleString()}
+                    Answered: {new Date(vAns.submittedAt || vAns.createdAt).toLocaleString()}
                   </div>
                 </div>
               );
             })()}
+
+            {viewingQ.status === 'disputed' && (() => {
+              const dispute = disputes.find(d => d.questionId === viewingQ.id);
+              if (!dispute) return null;
+              return (
+                <div style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.15)', padding: '0.8rem', borderRadius: '6px', marginBottom: '0.6rem' }}>
+                  <p style={{ fontWeight: 500, marginBottom: '0.3rem', color: '#ef4444' }}>⚠️ Dispute ({dispute.reason}):</p>
+                  <p style={{ fontSize: '0.82rem', whiteSpace: 'pre-wrap' }}>{dispute.description}</p>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+                    Disputed: {new Date(dispute.createdAt).toLocaleString()}
+                  </div>
+                  {dispute.astrologerResponse && (
+                    <div style={{ marginTop: '0.4rem', padding: '0.4rem', background: 'rgba(251, 191, 36, 0.08)', borderRadius: '4px' }}>
+                      <p style={{ fontSize: '0.78rem', color: '#fbbf24', fontWeight: 500 }}>Your Response:</p>
+                      <p style={{ fontSize: '0.78rem', whiteSpace: 'pre-wrap' }}>{dispute.astrologerResponse}</p>
+                      <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+                        Responded: {new Date(dispute.astrologerRespondedAt).toLocaleString()}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
             <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
               Status: <span className={`tag ${getStatusStyle(viewingQ.status)}`}>{viewingQ.status}</span>
-              · Due: {new Date(viewingQ.dueAt).toLocaleString()} · {viewingQ.campaignName}
+              · Due: {new Date(viewingQ.dueAt).toLocaleString()}
             </div>
             <div className="modal-actions">
               <button className="btn btn-secondary" onClick={() => setViewingQ(null)}>Close</button>
