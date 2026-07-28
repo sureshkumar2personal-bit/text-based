@@ -18,7 +18,7 @@ export default function AuthScreen({ onLogin }) {
       padding: '1rem'
     }}>
       <div className="modal" style={{ maxWidth: '420px', width: '100%', textAlign: 'center' }}>
-        <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>🔮</div>
+        <div style={{ fontSize: '4rem', marginBottom: '0.5rem' }}>🔮</div>
         <h2 className="gradient-text" style={{ fontSize: '1.5rem', marginBottom: '0.3rem' }}>AstroEvalution</h2>
         <p style={{ color: '#888', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
           {mode === 'login' ? 'Welcome back! Sign in to continue.' : 'Create your account to get started.'}

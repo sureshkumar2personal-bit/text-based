@@ -129,7 +129,7 @@ function RateAstrologerModal({ notification, onClose, onRated }) {
 
         {alreadyRated ? (
           <div style={{ textAlign: 'center', padding: '1.5rem' }}>
-            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>⭐</div>
+            <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>⭐</div>
             <p style={{ fontWeight: 600 }}>Already Rated</p>
             <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
               {ratings.find(r => r.disputeId === disputeId)?.score} ⭐
@@ -148,7 +148,7 @@ function RateAstrologerModal({ notification, onClose, onRated }) {
                     onMouseLeave={() => setHoverScore(0)}
                   >⭐</span>
                 ))}
-                <span style={{ fontSize: '1rem', marginLeft: '0.3rem', alignSelf: 'center' }}>{score}/5</span>
+                <span style={{ fontSize: '2rem', marginLeft: '0.3rem', alignSelf: 'center' }}>{score}/5</span>
               </div>
             </div>
 

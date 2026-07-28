@@ -297,7 +297,7 @@ export default function UserAstrologyProfiles() {
                   e.target.value = '';
                 }} />
               <label htmlFor="horo-upload" style={{ cursor: 'pointer', display: 'block' }}>
-                <div style={{ fontSize: '2rem', marginBottom: '0.3rem' }}>📤</div>
+                <div style={{ fontSize: '3rem', marginBottom: '0.3rem' }}>📤</div>
                 <span style={{ color: 'var(--purple)', fontWeight: 600, fontSize: '0.85rem' }}>Click to upload horoscope</span>
                 <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>PDF, JPG, PNG (max 5MB each)</div>
               </label>

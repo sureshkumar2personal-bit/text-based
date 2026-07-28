@@ -57,7 +57,7 @@ export default function UserRaiseDispute({ preselectId }) {
   if (raised) {
     return (
       <div className="card" style={{ textAlign: 'center', padding: '2rem' }}>
-        <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>⚖️</div>
+        <div style={{ fontSize: '4rem', marginBottom: '0.5rem' }}>⚖️</div>
         <h2>Dispute Raised Successfully!</h2>
         <div style={{ background: 'var(--bg-elevated)', color: 'var(--text-on-elevated)', padding: '1rem', borderRadius: '8px', display: 'inline-block', textAlign: 'left', margin: '0.5rem 0' }}>
           <div>Dispute ID: <strong>{raised.disputeId}</strong></div>
@@ -74,7 +74,7 @@ export default function UserRaiseDispute({ preselectId }) {
   if (answeredQuestions.length === 0) {
     return (
       <div className="card" style={{ textAlign: 'center', padding: '2rem' }}>
-        <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>✅</div>
+        <div style={{ fontSize: '4rem', marginBottom: '0.5rem' }}>✅</div>
         <h2>No Answered Questions</h2>
         <p style={{ color: 'var(--text-muted)' }}>You can only raise disputes on answered questions.</p>
       </div>

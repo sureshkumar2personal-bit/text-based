@@ -165,7 +165,7 @@ export default function UserAskQuestion({ onAskSuccess, preselectId }) {
   if (step === 'no-purchases') {
     return (
       <div className="card" style={{ textAlign: 'center', padding: '2rem' }}>
-        <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>📋</div>
+        <div style={{ fontSize: '4rem', marginBottom: '0.5rem' }}>📋</div>
         <h2>No Purchases Available</h2>
         <p style={{ color: 'var(--text-muted)' }}>You need to purchase a question slot first. Go to the "Purchase" tab.</p>
       </div>
@@ -175,7 +175,7 @@ export default function UserAskQuestion({ onAskSuccess, preselectId }) {
   if (step === 'done') {
     return (
       <div className="card" style={{ textAlign: 'center', padding: '2rem' }}>
-        <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>📨</div>
+        <div style={{ fontSize: '4rem', marginBottom: '0.5rem' }}>📨</div>
         <h2>Question Submitted!</h2>
         <div style={{ background: 'var(--pale)', padding: '1rem', borderRadius: '8px', display: 'inline-block', textAlign: 'left', margin: '0.5rem 0' }}>
           <div>Code: <strong>{submitted.questionCode}</strong></div>
@@ -375,7 +375,7 @@ export default function UserAskQuestion({ onAskSuccess, preselectId }) {
 
               <div style={{ marginTop: '0.8rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                  <span style={{ fontSize: '1rem' }}>📎</span>
+                  <span style={{ fontSize: '2rem' }}>📎</span>
                   <h4 style={{ margin: 0, fontSize: '0.85rem', color: 'var(--purple)' }}>Upload Documents</h4>
                 </div>
                 <div ref={uploadRef}
@@ -390,7 +390,7 @@ export default function UserAskQuestion({ onAskSuccess, preselectId }) {
                       e.target.value = '';
                     }} />
                   <label htmlFor="file-upload" style={{ cursor: 'pointer', display: 'block' }}>
-                    <div style={{ fontSize: '2rem', marginBottom: '0.3rem' }}>📤</div>
+                    <div style={{ fontSize: '3rem', marginBottom: '0.3rem' }}>📤</div>
                     <span style={{ color: 'var(--purple)', fontWeight: 600, fontSize: '0.85rem' }}>Click to upload</span>
                     <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>Images, PDFs (max 5MB each)</div>
                   </label>

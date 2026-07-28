@@ -80,7 +80,7 @@ export default function UserRatings() {
                   ⭐
                 </span>
               ))}
-              <span style={{ fontSize: '1rem', marginLeft: '0.3rem', alignSelf: 'center' }}>{score}/5</span>
+              <span style={{ fontSize: '2rem', marginLeft: '0.3rem', alignSelf: 'center' }}>{score}/5</span>
             </div>
           </div>
 

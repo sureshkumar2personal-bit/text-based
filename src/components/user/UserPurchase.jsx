@@ -50,7 +50,7 @@ export default function UserPurchase({ onPurchaseSuccess }) {
   if (purchased) {
     return (
       <div className="card" style={{ textAlign: 'center', padding: '2rem' }}>
-        <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>✅</div>
+        <div style={{ fontSize: '4rem', marginBottom: '0.5rem' }}>✅</div>
         <h2>Purchase Successful!</h2>
         <p style={{ color: 'var(--text-muted)', margin: '0.5rem 0' }}>You've purchased <strong>{purchased.count}x {purchased.variation}</strong> slot(s) in <strong>{purchased.campaignName}</strong></p>
         <div style={{ background: 'var(--bg-elevated)', color: 'var(--text-on-elevated)', padding: '1rem', borderRadius: '8px', display: 'inline-block', textAlign: 'left', margin: '0.5rem 0' }}>
@@ -138,13 +138,13 @@ export default function UserPurchase({ onPurchaseSuccess }) {
                   <button className={`btn ${variation === 'general' ? 'btn-primary' : 'btn-secondary'}`} style={{ flex: 1 }}
                     onClick={() => setVariation('general')}>
                     <div style={{ fontSize: '0.72rem' }}>General</div>
-                    <div style={{ fontSize: '1rem', fontWeight: 700 }}>₹{selectedCamp.generalPrice}</div>
+                    <div style={{ fontSize: '2rem', fontWeight: 700 }}>₹{selectedCamp.generalPrice}</div>
                     <div style={{ fontSize: '0.65rem', opacity: 0.7 }}>No personal details needed</div>
                   </button>
                   <button className={`btn ${variation === 'individual' ? 'btn-primary' : 'btn-secondary'}`} style={{ flex: 1 }}
                     onClick={() => setVariation('individual')}>
                     <div style={{ fontSize: '0.72rem' }}>Individual</div>
-                    <div style={{ fontSize: '1rem', fontWeight: 700 }}>₹{selectedCamp.individualPrice}</div>
+                    <div style={{ fontSize: '2rem', fontWeight: 700 }}>₹{selectedCamp.individualPrice}</div>
                     <div style={{ fontSize: '0.65rem', opacity: 0.7 }}>With birth chart details</div>
                   </button>
                 </div>
@@ -156,7 +156,7 @@ export default function UserPurchase({ onPurchaseSuccess }) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '2px' }}>
                     <button className="btn btn-sm btn-secondary" style={{ padding: '2px 8px', fontSize: '0.85rem' }}
                       onClick={() => setQuantity(q => Math.max(1, q - 1))} disabled={quantity <= 1}>−</button>
-                    <strong style={{ color: '#c8a8ff', fontSize: '1rem', minWidth: '24px', textAlign: 'center' }}>{quantity}</strong>
+                    <strong style={{ color: '#c8a8ff', fontSize: '2rem', minWidth: '24px', textAlign: 'center' }}>{quantity}</strong>
                     <button className="btn btn-sm btn-secondary" style={{ padding: '2px 8px', fontSize: '0.85rem' }}
                       onClick={() => setQuantity(q => Math.min(selectedCamp.availableSlots, q + 1))} disabled={quantity >= selectedCamp.availableSlots}>+</button>
                   </div>

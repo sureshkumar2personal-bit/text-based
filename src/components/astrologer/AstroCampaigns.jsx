@@ -79,7 +79,7 @@ export default function AstroCampaigns({ astrologerId }) {
       description: (c.description || '').slice(0, 50),
       generalPrice: GENERAL_PRICES.includes(Number(c.generalPrice)) ? Number(c.generalPrice) : '',
       individualPrice: INDIVIDUAL_PRICES.includes(Number(c.individualPrice)) ? Number(c.individualPrice) : '',
-      totalSlots: String(c.totalSlots),
+      totalSlots: String(c.totalSlots - c.soldSlots),
       deadlineHours: String(c.deadlineHours),
       generalQuestionLimit: String(c.generalQuestionLimit),
       individualQuestionLimit: String(c.individualQuestionLimit),
@@ -99,7 +99,7 @@ export default function AstroCampaigns({ astrologerId }) {
         generalPrice: Number(form.generalPrice),
         individualPrice: Number(form.individualPrice),
         price: Number(form.generalPrice),
-        totalSlots: Number(form.totalSlots),
+        totalSlots: edit.soldSlots + Number(form.totalSlots),
         submissionMode: edit.submissionMode || 'text',
         answerMode: edit.answerMode || 'text',
         categories: edit.categories?.length ? edit.categories : DEFAULT_CATEGORIES,
@@ -232,8 +232,9 @@ export default function AstroCampaigns({ astrologerId }) {
             <div className="campaign-form-section-title">⚙️ Slot Allocation</div>
             <div className="row">
               <div className="form-group">
-                <label>Total Slots</label>
+                <label>{edit ? 'Available Slots' : 'Total Slots'}</label>
                 <input type="number" min="1" max="500" step="1" value={form.totalSlots} onChange={e => setForm({...form, totalSlots: e.target.value})} placeholder="50" aria-invalid={Boolean(totalSlotsError)} />
+                {edit && <div className="helper">{edit.soldSlots} slot{edit.soldSlots !== 1 ? 's' : ''} already purchased — editing available slots only</div>}
                 {totalSlotsError && <div className="campaign-field-error">{totalSlotsError}</div>}
               </div>
               <div className="form-group"><label>Deadline (hours)</label><input type="number" value={form.deadlineHours} onChange={e => setForm({...form, deadlineHours: e.target.value})} placeholder="48" /></div>
