@@ -128,7 +128,8 @@ export default function UserRaiseDispute({ preselectId }) {
           {reason === 'other' && (
             <div className="form-group">
               <label>Describe your issue</label>
-              <textarea rows={4} value={description} onChange={e => setDescription(e.target.value)} placeholder="Explain why you're disputing this answer..." />
+              <textarea rows={4} maxLength={100} value={description} onChange={e => setDescription(e.target.value)} placeholder="Explain why you're disputing this answer..." />
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'right' }}>{description.length}/100</div>
             </div>
           )}
 
