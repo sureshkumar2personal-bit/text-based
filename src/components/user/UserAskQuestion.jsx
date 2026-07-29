@@ -210,7 +210,7 @@ export default function UserAskQuestion({ onAskSuccess, preselectId }) {
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>🎤 {submitted.voiceNote.name} ({(submitted.voiceNote.size / 1024).toFixed(1)} KB)</div>
             </div>
           )}
-          <div>Due: {new Date(Date.now() + (submitted.campaign.deadlineHours || 48) * 3600000).toLocaleString()}</div>
+          <div>Due: {submitted.campaign.deadlineHours ? new Date(Date.now() + submitted.campaign.deadlineHours * 3600000).toLocaleString() : 'No deadline'}</div>
         </div>
         <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Track your question status in the "Tracking" tab. It also appears in the astrologer's queue.</p>
         <button className="btn btn-primary" style={{ marginTop: '0.5rem' }} onClick={() => { setStep('select'); setSubmitted(null); }}>Ask Another</button>

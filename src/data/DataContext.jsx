@@ -152,7 +152,7 @@ export function DataProvider({ children }) {
       title: data.title, questionText: data.questionText,
       status: 'submitted',
       submittedAt: new Date().toISOString(),
-      dueAt: new Date(Date.now() + (data.deadlineHours || 48) * 3600000).toISOString(),
+      dueAt: data.deadlineHours ? new Date(Date.now() + data.deadlineHours * 3600000).toISOString() : null,
       campaignName: data.campaignName, answerMode: data.answerMode,
       astrologerName,
       profile: data.profile || null,

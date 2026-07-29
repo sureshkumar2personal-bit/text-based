@@ -50,7 +50,7 @@ export default function UserTracking({ filter, onNavigate }) {
               </div>
 
               <div style={{ fontSize: '0.7rem', color: '#555', marginTop: '0.2rem' }}>
-                Submitted: {new Date(q.submittedAt).toLocaleString()} · Due: {new Date(q.dueAt).toLocaleString()}
+                Submitted: {new Date(q.submittedAt).toLocaleString()} · Due: {q.dueAt ? new Date(q.dueAt).toLocaleString() : 'No deadline'}
               </div>
 
               <button className="btn btn-secondary btn-sm" style={{ marginTop: '0.3rem' }} onClick={() => setSelected(q)}>View Details</button>
@@ -102,7 +102,7 @@ export default function UserTracking({ filter, onNavigate }) {
                   </div>
                   <p style={{ fontSize: '0.85rem' }}>{ans.answerText}</p>
                 </div>
-              ) : <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', marginTop: '0.5rem' }}>Answer pending — due by {new Date(selected.dueAt).toLocaleString()}</p>;
+              ) : <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', marginTop: '0.5rem' }}>Answer pending{selected.dueAt ? ` — due by ${new Date(selected.dueAt).toLocaleString()}` : ''}</p>;
             })()}
 
             {selected.status === 'disputed' && (() => {

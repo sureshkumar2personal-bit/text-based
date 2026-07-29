@@ -16,7 +16,7 @@ const EMPTY_CAMPAIGN_FORM = {
   generalPrice: '',
   individualPrice: '',
   totalSlots: '',
-  deadlineHours: '48',
+  deadlineHours: '',
   generalQuestionLimit: '0',
   individualQuestionLimit: '0',
   startAt: '',
@@ -80,7 +80,7 @@ export default function AstroCampaigns({ astrologerId }) {
       generalPrice: GENERAL_PRICES.includes(Number(c.generalPrice)) ? Number(c.generalPrice) : '',
       individualPrice: INDIVIDUAL_PRICES.includes(Number(c.individualPrice)) ? Number(c.individualPrice) : '',
       totalSlots: String(c.totalSlots - c.soldSlots),
-      deadlineHours: String(c.deadlineHours),
+      deadlineHours: c.deadlineHours ? String(c.deadlineHours) : '',
       generalQuestionLimit: String(c.generalQuestionLimit),
       individualQuestionLimit: String(c.individualQuestionLimit),
       startAt: c.startAt || '',
@@ -100,13 +100,14 @@ export default function AstroCampaigns({ astrologerId }) {
         individualPrice: Number(form.individualPrice),
         price: Number(form.generalPrice),
         totalSlots: edit.soldSlots + Number(form.totalSlots),
+        deadlineHours: form.deadlineHours ? Number(form.deadlineHours) : null,
         submissionMode: edit.submissionMode || 'text',
         answerMode: edit.answerMode || 'text',
         categories: edit.categories?.length ? edit.categories : DEFAULT_CATEGORIES,
         languages: edit.languages?.length ? edit.languages : DEFAULT_LANGUAGES
       });
     } else {
-      const c = { id: `cmp-${Date.now()}`, astrologerId, campaignName: form.campaignName, campaignCode: `CMP-${Math.random().toString(36).slice(2, 8).toUpperCase()}`, description: form.description, generalPrice: Number(form.generalPrice), individualPrice: Number(form.individualPrice), price: Number(form.generalPrice), currency: 'INR', totalSlots: Number(form.totalSlots), soldSlots: 0, availableSlots: Number(form.totalSlots), generalQuestionLimit: Number(form.generalQuestionLimit), individualQuestionLimit: Number(form.individualQuestionLimit), submissionMode: 'text', answerMode: 'text', deadlineHours: Number(form.deadlineHours), status: 'draft', categories: DEFAULT_CATEGORIES, languages: DEFAULT_LANGUAGES, startAt: form.startAt || null, endAt: form.endAt || null, createdAt: new Date().toISOString() };
+      const c = { id: `cmp-${Date.now()}`, astrologerId, campaignName: form.campaignName, campaignCode: `CMP-${Math.random().toString(36).slice(2, 8).toUpperCase()}`, description: form.description, generalPrice: Number(form.generalPrice), individualPrice: Number(form.individualPrice), price: Number(form.generalPrice), currency: 'INR', totalSlots: Number(form.totalSlots), soldSlots: 0, availableSlots: Number(form.totalSlots), generalQuestionLimit: Number(form.generalQuestionLimit), individualQuestionLimit: Number(form.individualQuestionLimit), submissionMode: 'text', answerMode: 'text', deadlineHours: form.deadlineHours ? Number(form.deadlineHours) : null, status: 'draft', categories: DEFAULT_CATEGORIES, languages: DEFAULT_LANGUAGES, startAt: form.startAt || null, endAt: form.endAt || null, createdAt: new Date().toISOString() };
       addCampaign(c);
     }
     setShowForm(false);
@@ -164,7 +165,7 @@ export default function AstroCampaigns({ astrologerId }) {
                 <div><span style={{ color: 'var(--text-muted)' }}>General</span><br />₹{c.generalPrice}</div>
                 <div><span style={{ color: 'var(--text-muted)' }}>Individual</span><br />₹{c.individualPrice}</div>
                 <div><span style={{ color: 'var(--text-muted)' }}>Mode</span><br />{c.submissionMode}/{c.answerMode}</div>
-                <div><span style={{ color: 'var(--text-muted)' }}>Deadline</span><br />{c.deadlineHours}h</div>
+                <div><span style={{ color: 'var(--text-muted)' }}>Deadline</span><br />{c.deadlineHours ? `${c.deadlineHours}h` : 'No deadline'}</div>
               </div>
               <div><span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>Slots: {c.soldSlots}/{c.totalSlots}</span></div>
               <div className="progress-bar"><div className="progress-fill" style={{ width: `${pct}%` }} /></div>

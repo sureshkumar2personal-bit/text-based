@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useData } from '../../data/DataContext';
 import { useToast } from '../../contexts/ToastContext';
 import { useNotifications, NOTIF_TYPES } from '../../contexts/NotificationContext';
@@ -13,6 +13,12 @@ export default function AstroQueue({ astrologerId }) {
   const [viewingQ, setViewingQ] = useState(null);
   const [selected, setSelected] = useState(null);
   const [answerMode, setAnswerMode] = useState('text');
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
   const [answerText, setAnswerText] = useState('');
   const [voiceUrl, setVoiceUrl] = useState('');
 
@@ -48,6 +54,15 @@ export default function AstroQueue({ astrologerId }) {
     return 'tag-blue';
   };
 
+  const timeLeft = (q) => {
+    if (!q.dueAt) return null;
+    const diff = new Date(q.dueAt) - now;
+    if (diff <= 0) return { text: 'Expired', expired: true };
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    return { text: `${h}h ${m}m remaining`, expired: false, hoursLeft: h + m / 60 };
+  };
+
   return (
     <div>
       <div className="card">
@@ -73,7 +88,7 @@ export default function AstroQueue({ astrologerId }) {
               <div
                 className="card"
                 key={q.id}
-                style={{ cursor: 'pointer', minHeight: '280px', display: 'flex', flexDirection: 'column' }}
+                style={{ cursor: 'pointer', minHeight: '280px', display: 'flex', flexDirection: 'column', borderColor: (t => { if (!t) return undefined; if (t.expired) return '#f87171'; if (t.hoursLeft <= 10) return '#fb923c'; return undefined; })(timeLeft(q)) }}
                 onClick={() => setViewingQ(q)}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -92,9 +107,18 @@ export default function AstroQueue({ astrologerId }) {
                   </div>
                 )}
                 <div style={{ flex: 1 }} />
-                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-                  Due: {new Date(q.dueAt).toLocaleString()} · {q.campaignName}
-                </div>
+                {(() => {
+                  const tl = timeLeft(q);
+                  if (!tl) return <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>{q.campaignName}</div>;
+                  return (
+                    <div style={{ fontSize: '0.72rem', marginTop: '0.2rem' }}>
+                      <span style={{ color: tl.expired ? '#f87171' : tl.hoursLeft <= 10 ? '#fb923c' : 'var(--text-muted)' }}>
+                        {tl.expired ? '⏰ Expired' : `⏳ ${tl.text}`}
+                      </span>
+                      <span style={{ color: 'var(--text-muted)', marginLeft: '0.3rem' }}>· {q.campaignName}</span>
+                    </div>
+                  );
+                })()}
 
                 {ans && (
                   <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.15)', borderRadius: '6px', fontSize: '0.78rem', color: '#c8f0d0' }}>
@@ -180,7 +204,11 @@ export default function AstroQueue({ astrologerId }) {
 
             <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
               Status: <span className={`tag ${getStatusStyle(viewingQ.status)}`}>{viewingQ.status}</span>
-              · Due: {new Date(viewingQ.dueAt).toLocaleString()}
+              {(() => {
+                const tl = timeLeft(viewingQ);
+                if (!tl) return null;
+                return <span style={{ marginLeft: '0.3rem', color: tl.expired ? '#f87171' : tl.hoursLeft <= 10 ? '#fb923c' : undefined }}>· {tl.expired ? '⏰ Expired' : `⏳ ${tl.text}`}</span>;
+              })()}
             </div>
             <div className="modal-actions">
               <button className="btn btn-secondary" onClick={() => setViewingQ(null)}>Close</button>

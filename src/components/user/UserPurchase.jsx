@@ -195,7 +195,7 @@ export default function UserPurchase({ onPurchaseSuccess }) {
                     <div><span style={{ color: 'var(--text-muted)' }}>General</span><br /><strong>₹{c.generalPrice}</strong></div>
                     <div><span style={{ color: 'var(--text-muted)' }}>Individual</span><br /><strong>₹{c.individualPrice}</strong></div>
                     <div><span style={{ color: 'var(--text-muted)' }}>Slots Left</span><br />{c.availableSlots}/{c.totalSlots}</div>
-                    <div><span style={{ color: 'var(--text-muted)' }}>Answer In</span><br />{c.deadlineHours}h</div>
+                    <div><span style={{ color: 'var(--text-muted)' }}>Answer In</span><br />{c.deadlineHours ? `${c.deadlineHours}h` : 'No deadline'}</div>
                   </div>
                   <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', margin: '0.3rem 0' }}>
                     {c.categories.map(cat => <span className="tag tag-blue" key={cat}>{cat}</span>)}

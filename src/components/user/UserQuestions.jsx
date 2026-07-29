@@ -374,7 +374,7 @@ export default function UserQuestions({ filter, onNavigate, onPurchaseSuccess })
                       <div><span style={{ color: 'var(--text-muted)' }}>General</span><br /><strong>₹{c.generalPrice}</strong></div>
                       <div><span style={{ color: 'var(--text-muted)' }}>Individual</span><br /><strong>₹{c.individualPrice}</strong></div>
                       <div><span style={{ color: 'var(--text-muted)' }}>Slots Left</span><br />{c.availableSlots}/{c.totalSlots}</div>
-                      <div><span style={{ color: 'var(--text-muted)' }}>Answer In</span><br />{c.deadlineHours}h</div>
+                      <div><span style={{ color: 'var(--text-muted)' }}>Answer In</span><br />{c.deadlineHours ? `${c.deadlineHours}h` : 'No deadline'}</div>
                     </div>
                     <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', margin: '0.3rem 0' }}>
                       {c.categories.map(cat => <span className="tag tag-blue" key={cat}>{cat}</span>)}
@@ -475,7 +475,7 @@ export default function UserQuestions({ filter, onNavigate, onPurchaseSuccess })
                   </div>
                   <div style={{ fontSize: '0.72rem', color: '#d63384', marginTop: '0.2rem' }}>
                     Astrologer: {q.astrologerName} · {q.campaignName}
-                    <br />Submitted: {new Date(q.submittedAt).toLocaleDateString()} · Due: {new Date(q.dueAt).toLocaleDateString()}
+                    <br />Submitted: {new Date(q.submittedAt).toLocaleDateString()} · Due: {q.dueAt ? new Date(q.dueAt).toLocaleDateString() : 'No deadline'}
                   </div>
                   {ans && (
                     <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'var(--bg-elevated)', borderRadius: '6px', fontSize: '0.78rem', color: 'var(--text-on-elevated)' }}>
@@ -549,7 +549,7 @@ export default function UserQuestions({ filter, onNavigate, onPurchaseSuccess })
 
             <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
               Status: <span className={`tag ${viewingQ.status === 'answered' ? 'tag-green' : viewingQ.status === 'disputed' ? 'tag-red' : viewingQ.status === 'submitted' ? 'tag-blue' : 'tag-yellow'}`}>{viewingQ.status}</span>
-              · Due: {new Date(viewingQ.dueAt).toLocaleString()}
+              · Due: {viewingQ.dueAt ? new Date(viewingQ.dueAt).toLocaleString() : 'No deadline'}
             </div>
             <div className="modal-actions">
               <button className="btn btn-secondary" onClick={() => setViewingQ(null)}>Close</button>
