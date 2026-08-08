@@ -18,6 +18,7 @@ import UserQuestions from './components/user/UserQuestions';
 import UserAskQuestion from './components/user/UserAskQuestion';
 import UserTracking from './components/user/UserTracking';
 import UserRaiseDispute from './components/user/UserRaiseDispute';
+import UserDisputeTracking from './components/user/UserDisputeTracking';
 import UserAstrologyProfiles from './components/user/UserAstrologyProfiles';
 
 import PlatformCampaigns from './components/platform/PlatformCampaigns';
@@ -25,45 +26,64 @@ import PlatformDisputes from './components/platform/PlatformDisputes';
 
 import UserDashboard from './components/user/UserDashboard';
 import UserRatings from './components/user/UserRatings';
+import UserEmergency from './components/user/UserEmergency';
 import AstroProfile from './components/astrologer/AstroProfile';
+import AstroEmergency from './components/astrologer/AstroEmergency';
 import AstroAnalytics from './components/astrologer/AstroAnalytics';
 import PlatformDashboard from './components/platform/PlatformDashboard';
 import TransactionLogs from './components/platform/TransactionLogs';
 import UserWallet from './components/user/UserWallet';
 import AstroWallet from './components/astrologer/AstroWallet';
 
+import MainNavigation from './components/navigation/MainNavigation';
+import SectionNavigation from './components/navigation/SectionNavigation';
+import MobileNavigation from './components/navigation/MobileNavigation';
 
-const TABS = {
+const NAV = {
   astrologer: [
-    { id: 'campaigns', label: 'Campaigns' },
-    { id: 'queue', label: 'Question Queue' },
-    { id: 'sales', label: 'Sales' },
-    { id: 'disputes', label: 'Disputes' },
-    { id: 'wallet', label: 'Wallet' },
-    { id: 'profile', label: 'My Profile' },
-    { id: 'analytics', label: 'Analytics' }
+    { id: 'overview', label: 'Overview', icon: '📊', children: [{ id: 'analytics', label: 'Dashboard & Analytics' }] },
+    { id: 'questions', label: 'Questions', icon: '❓', children: [{ id: 'queue', label: 'Question Queue' }, { id: 'disputes', label: 'Disputes' }] },
+    { id: 'business', label: 'Business', icon: '💼', children: [{ id: 'campaigns', label: 'Campaigns' }, { id: 'sales', label: 'Sales' }] },
+    { id: 'finance', label: 'Finance', icon: '💰', children: [{ id: 'wallet', label: 'Wallet' }] },
+    { id: 'account', label: 'Account', icon: '👤', children: [{ id: 'profile', label: 'My Profile' }] },
+    { id: 'emergency', label: 'Emergency', icon: '🚨' }
   ],
   user: [
-    { id: 'dashboard', label: 'Dashboard' },
-    { id: 'questions', label: 'My Questions' },
-    { id: 'ask', label: 'Ask Question' },
-    { id: 'wallet', label: 'Wallet' },
-    { id: 'tracking', label: 'Tracking' },
-    { id: 'raise-dispute', label: 'Raise Dispute' },
-    { id: 'astrology-profiles', label: 'My Profile' },
-    { id: 'ratings', label: 'Ratings & Reviews' }
+    { id: 'overview', label: 'Overview', icon: '🏠', children: [{ id: 'dashboard', label: 'Dashboard' }] },
+    { id: 'questions', label: 'Questions', icon: '❓', children: [{ id: 'questions', label: 'My Questions' }, { id: 'ask', label: 'Ask Question' }, { id: 'tracking', label: 'Tracking' }] },
+    { id: 'payments', label: 'Payments', icon: '💳', children: [{ id: 'wallet', label: 'Wallet' }] },
+    { id: 'support', label: 'Support', icon: '⚖️', children: [{ id: 'raise-dispute', label: 'Disputes' }, { id: 'dispute-tracking', label: 'Dispute Tracking' }, { id: 'ratings', label: 'Ratings & Reviews' }] },
+    { id: 'account', label: 'Account', icon: '👤', children: [{ id: 'astrology-profiles', label: 'My Profile' }] },
+    { id: 'emergency', label: 'Emergency', icon: '🚨' }
   ],
   platform: [
-    { id: 'dashboard', label: 'Dashboard' },
-    { id: 'campaigns', label: 'Campaigns' },
-    { id: 'disputes', label: 'Disputes' },
-    { id: 'transactions', label: 'Transactions' }
+    { id: 'overview', label: 'Overview', icon: '🏛️', children: [{ id: 'dashboard', label: 'Dashboard' }] },
+    { id: 'operations', label: 'Operations', icon: '⚙️', children: [{ id: 'campaigns', label: 'Campaigns' }, { id: 'disputes', label: 'Disputes' }] },
+    { id: 'finance', label: 'Finance', icon: '💰', children: [{ id: 'transactions', label: 'Transactions' }] }
   ]
+};
+
+const firstPage = (a, sectionId) => {
+  const sec = NAV[a].find(s => s.id === sectionId);
+  return sec && sec.children && sec.children.length ? sec.children[0].id : sectionId;
+};
+
+const buildSectionMap = (a) => {
+  const map = {};
+  NAV[a].forEach(s => {
+    if (s.children && s.children.length) {
+      s.children.forEach(c => { map[c.id] = s.id; });
+    } else {
+      map[s.id] = s.id;
+    }
+  });
+  return map;
 };
 
 function AppContent() {
   const [actor, setActor] = useState('user');
-  const [tab, setTab] = useState(TABS[actor][0].id);
+  const [section, setSection] = useState(NAV.user[0].id);
+  const [tab, setTab] = useState(firstPage('user', NAV.user[0].id));
   const [navFilter, setNavFilter] = useState(null);
   const [preselectPurchase, setPreselectPurchase] = useState(null);
   const [confetti, setConfetti] = useState(false);
@@ -71,18 +91,33 @@ function AppContent() {
   const [selectedAstrologerId, setSelectedAstrologerId] = useState('a-1');
   const { allAstrologers } = useData();
 
-  const switchActor = (a) => { setActor(a); setTab(TABS[a][0].id); setNavFilter(null); setPreselectPurchase(null); };
+  const switchActor = (a) => {
+    setActor(a);
+    setSection(NAV[a][0].id);
+    setTab(firstPage(a, NAV[a][0].id));
+    setNavFilter(null);
+    setPreselectPurchase(null);
+  };
 
   const handleNavigate = (t, filter, preselectId) => {
+    setSection(buildSectionMap(actor)[t] || t);
     setNavFilter(filter);
     setPreselectPurchase(preselectId || null);
     setTab(t);
   };
 
-  const handleTabClick = (id) => {
+  const selectSection = (secId) => {
     setNavFilter(null);
     setPreselectPurchase(null);
-    setTab(id);
+    setSection(secId);
+    setTab(firstPage(actor, secId));
+  };
+
+  const selectTab = (tabId) => {
+    setNavFilter(null);
+    setPreselectPurchase(null);
+    setSection(buildSectionMap(actor)[tabId] || tabId);
+    setTab(tabId);
   };
 
   const triggerConfetti = () => {
@@ -127,7 +162,7 @@ function AppContent() {
           {actor === 'astrologer' && (
             <select
               value={selectedAstrologerId}
-              onChange={e => { setSelectedAstrologerId(e.target.value); setTab(TABS.astrologer[0].id); }}
+              onChange={e => { setSelectedAstrologerId(e.target.value); selectSection(NAV.astrologer[0].id); }}
               style={{
                 marginLeft: '0.5rem', padding: '4px 8px', borderRadius: '6px',
                 border: '1px solid var(--line)', background: 'transparent', color: 'var(--ink)',
@@ -140,18 +175,26 @@ function AppContent() {
             </select>
           )}
         </div>
-        <nav className="tab-bar">
-          {TABS[actor].map(t => (
-            <button key={t.id} className={`tab ${tab === t.id ? 'active' : ''}`}
-              onClick={() => handleTabClick(t.id)}>{t.label}</button>
-          ))}
-        </nav>
+        <div className="nav-shell">
+          <div className="desktop-nav">
+            <MainNavigation sections={NAV[actor]} activeSection={section} onSelect={selectSection} />
+            <SectionNavigation section={NAV[actor].find(s => s.id === section)} activeTab={tab} onSelect={selectTab} />
+          </div>
+          <MobileNavigation
+            sections={NAV[actor]}
+            activeSection={section}
+            activeTab={tab}
+            onSection={selectSection}
+            onTab={selectTab}
+          />
+        </div>
       </header>
 
       <main className="main animate-in">
         {actor === 'astrologer' && (
           <>
             {tab === 'campaigns' && <AstroCampaigns astrologerId={selectedAstrologerId} />}
+            {tab === 'emergency' && <AstroEmergency astrologerId={selectedAstrologerId} />}
             {tab === 'queue' && <AstroQueue astrologerId={selectedAstrologerId} />}
             {tab === 'sales' && <AstroSales astrologerId={selectedAstrologerId} />}
             {tab === 'disputes' && <AstroDisputes astrologerId={selectedAstrologerId} />}
@@ -163,11 +206,13 @@ function AppContent() {
         {actor === 'user' && (
           <>
             {tab === 'dashboard' && <UserDashboard onNavigate={handleNavigate} />}
+            {tab === 'emergency' && <UserEmergency />}
             {tab === 'questions' && <UserQuestions key={'q-' + navFilter} filter={navFilter} onNavigate={handleNavigate} onPurchaseSuccess={triggerConfetti} />}
             {tab === 'ask' && <UserAskQuestion key={'ask-' + preselectPurchase} onAskSuccess={triggerConfetti} preselectId={preselectPurchase} />}
             {tab === 'wallet' && <UserWallet />}
             {tab === 'tracking' && <UserTracking key={'tr-' + navFilter} filter={navFilter} onNavigate={handleNavigate} />}
             {tab === 'raise-dispute' && <UserRaiseDispute key={'rd-' + preselectPurchase} preselectId={preselectPurchase} />}
+            {tab === 'dispute-tracking' && <UserDisputeTracking />}
             {tab === 'astrology-profiles' && <UserAstrologyProfiles />}
             {tab === 'ratings' && <UserRatings />}
           </>

@@ -1006,3 +1006,99 @@ export const astrologerWalletTransactions = Object.fromEntries(
 export const raasiList = raasiOptions;
 export const nakshatraList = nakshatraOptions;
 export const relationshipOptions = ['self', 'father', 'mother', 'son', 'daughter', 'spouse', 'sibling', 'friend', 'other'];
+
+// ═══════════════════════════════════════════════════════════════════════
+// EMERGENCY CALL FLOW (mock)
+// ═══════════════════════════════════════════════════════════════════════
+
+export const emergencyOptions = {
+  languages: ['Tamil', 'English', 'Hindi', 'Telugu', 'Malayalam', 'Kannada', 'Tanglish'],
+  purposes: ['Family', 'Relationship', 'Marriage', 'Land or property', 'Career', 'Business', 'Finance', 'Health', 'Education', 'Legal', 'Other']
+};
+
+function emerSlot(id, astrologerId, astrologerName, dayOffset, start, end, duration, price, callModes, langs, purposes, status = 'published', isRecurring = false) {
+  const date = new Date(now.getTime() + dayOffset * 86400000);
+  return {
+    id, astrologerId, astrologerName,
+    title: `Emergency Slot ${start}-${end}`,
+    slotDate: date.toISOString().slice(0, 10),
+    startTime: start, endTime: end,
+    callDurationMinutes: duration, breakTimeMinutes: 5,
+    price, status, callModes, languages: langs, purposes,
+    isRecurring,
+    createdAt: new Date(now.getTime() - 2 * 86400000).toISOString()
+  };
+}
+
+export const emergencySlots = [
+  emerSlot('ems-1', 'a-1', 'Dr. Arjun Nair', 0, '18:00', '20:00', 20, 299, 'both', ['English', 'Tamil'], ['Career', 'Finance', 'Health']),
+  emerSlot('ems-2', 'a-1', 'Dr. Arjun Nair', 1, '10:00', '12:00', 20, 249, 'audio', ['English'], ['Career', 'Business']),
+  emerSlot('ems-3', 'a-2', 'Lakshmi Devi', 0, '17:00', '19:00', 15, 199, 'both', ['Tamil', 'English'], ['Family', 'Marriage', 'Relationship']),
+  emerSlot('ems-4', 'a-2', 'Lakshmi Devi', 2, '09:00', '11:00', 15, 179, 'audio', ['Tamil'], ['Marriage', 'Family']),
+  emerSlot('ems-5', 'a-6', 'Dr. Meena Gupta', 0, '19:00', '21:00', 25, 349, 'video', ['English', 'Hindi'], ['Health', 'Career']),
+  emerSlot('ems-6', 'a-6', 'Dr. Meena Gupta', 1, '15:00', '17:00', 25, 329, 'both', ['Hindi', 'English'], ['Health', 'Education']),
+  emerSlot('ems-7', 'a-8', 'Anjali Menon', 0, '20:00', '22:00', 20, 399, 'both', ['English'], ['Relationship', 'Career']),
+  emerSlot('ems-8', 'a-8', 'Anjali Menon', 3, '18:30', '20:30', 20, 379, 'audio', ['English'], ['Relationship']),
+  emerSlot('ems-9', 'a-3', 'Rajesh Kumar', 0, '16:00', '18:00', 20, 249, 'both', ['English', 'Tanglish'], ['Finance', 'Business', 'Career']),
+  emerSlot('ems-10', 'a-9', 'Swami Prakash Das', 0, '21:00', '23:00', 25, 449, 'audio', ['Tamil', 'English'], ['Family', 'Career', 'Health']),
+  emerSlot('ems-11', 'a-11', 'Guruji Srinivas', 1, '08:00', '10:00', 20, 299, 'both', ['Tamil', 'English'], ['Land or property', 'Career']),
+  emerSlot('ems-12', 'a-14', 'Dr. Sunita Rao', 0, '11:00', '13:00', 25, 349, 'video', ['English', 'Hindi'], ['Health', 'Education']),
+];
+
+export const emergencyRequests = [
+  {
+    id: 'emr-1', userId: 'u-1', astrologerId: 'a-1', astrologerName: 'Dr. Arjun Nair',
+    slotId: 'ems-2', callType: 'audio', purpose: 'Career', language: 'English',
+    priceCharged: 249, status: 'call_completed',
+    createdAt: new Date(now.getTime() - 3 * 86400000).toISOString(),
+    acceptedAt: new Date(now.getTime() - 3 * 86400000 + 10 * 60000).toISOString(),
+    startedAt: new Date(now.getTime() - 3 * 86400000 + 15 * 60000).toISOString(),
+     endedAt: new Date(now.getTime() - 3 * 86400000 + 35 * 60000).toISOString(),
+     endedBy: 'astrologer',
+     rating: 4, reviewText: 'Very clear guidance on my career move.', ratedAt: new Date(now.getTime() - 2 * 86400000).toISOString(),
+    ratingWindowExpiresAt: new Date(now.getTime() - 3 * 86400000 + 2 * 3600000).toISOString()
+  },
+  {
+    id: 'emr-2', userId: 'u-1', astrologerId: 'a-2', astrologerName: 'Lakshmi Devi',
+    slotId: 'ems-3', callType: 'both', purpose: 'Marriage', language: 'Tamil',
+    priceCharged: 199, status: 'rejected',
+    createdAt: new Date(now.getTime() - 1 * 86400000).toISOString(),
+    rejectionReason: 'Astrologer unavailable at scheduled time', rejectedAt: new Date(now.getTime() - 1 * 86400000 + 5 * 60000).toISOString()
+  },
+  {
+    id: 'emr-3', userId: 'u-2', astrologerId: 'a-6', astrologerName: 'Dr. Meena Gupta',
+    slotId: 'ems-5', callType: 'video', purpose: 'Health', language: 'English',
+    priceCharged: 349, status: 'payment_completed',
+    createdAt: new Date(now.getTime() - 3 * 3600000).toISOString()
+  },
+  {
+    id: 'emr-4', userId: 'u-3', astrologerId: 'a-8', astrologerName: 'Anjali Menon',
+    slotId: 'ems-7', callType: 'both', purpose: 'Relationship', language: 'English',
+    priceCharged: 399, status: 'accepted',
+   createdAt: new Date(now.getTime() - 2 * 3600000).toISOString(),
+     acceptedAt: new Date(now.getTime() - 1 * 3600000).toISOString()
+   },
+   {
+     id: 'emr-7', userId: 'u-1', astrologerId: 'a-1', astrologerName: 'Dr. Arjun Nair',
+     slotId: 'ems-2', callType: 'audio', purpose: 'Career', language: 'English',
+     priceCharged: 249, status: 'call_in_progress',
+     createdAt: new Date(now.getTime() - 10 * 60000).toISOString(),
+     acceptedAt: new Date(now.getTime() - 8 * 60000).toISOString(),
+     startedAt: new Date(now.getTime() - 4 * 60000).toISOString(),
+     userAttended: true, userJoinedAt: new Date(now.getTime() - 3 * 60000).toISOString()
+   },
+   {
+    id: 'emr-5', userId: 'u-4', astrologerId: 'a-1', astrologerName: 'Dr. Arjun Nair',
+    slotId: 'ems-1', callType: 'audio', purpose: 'Finance', language: 'English',
+    priceCharged: 299, status: 'requested',
+    createdAt: new Date(now.getTime() - 30 * 60000).toISOString()
+  },
+  {
+    id: 'emr-6', userId: 'u-5', astrologerId: 'a-9', astrologerName: 'Swami Prakash Das',
+    slotId: 'ems-10', callType: 'audio', purpose: 'Family', language: 'Tamil',
+    priceCharged: 449, status: 'call_in_progress',
+    createdAt: new Date(now.getTime() - 50 * 60000).toISOString(),
+    acceptedAt: new Date(now.getTime() - 40 * 60000).toISOString(),
+    startedAt: new Date(now.getTime() - 5 * 60000).toISOString()
+  },
+];

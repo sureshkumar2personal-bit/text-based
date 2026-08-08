@@ -18,6 +18,9 @@ import {
   followUpQuestions as initialFollowUpQuestions,
   astrologerWallets as initialAstroWallets,
   astrologerWalletTransactions as initialAstroWalletTx,
+  emergencySlots as initialEmergencySlots,
+  emergencyRequests as initialEmergencyRequests,
+  emergencyOptions as initialEmergencyOptions,
 } from './mockData';
 
 const DataContext = createContext(null);
@@ -39,6 +42,10 @@ export function DataProvider({ children }) {
   const [followUpQuestions, setFollowUpQuestions] = useLocalState('ae_followUpQuestions', initialFollowUpQuestions);
   const [astrologerWallets, setAstrologerWallets] = useLocalState('ae_astroWallets', initialAstroWallets);
   const [astrologerWalletTxMap, setAstrologerWalletTxMap] = useLocalState('ae_astroWalletTx', initialAstroWalletTx);
+  const [emergencySlots, setEmergencySlots] = useLocalState('ae_emergencySlots', initialEmergencySlots);
+  const [emergencyRequests, setEmergencyRequests] = useLocalState('ae_emergencyRequests', initialEmergencyRequests);
+  const [emergencyOptions, setEmergencyOptions] = useLocalState('ae_emergencyOptions', initialEmergencyOptions);
+  const [emergencyCallRecordings, setEmergencyCallRecordings] = useLocalState('ae_emergencyRecordings', {});
 
   useEffect(() => {
     setCampaigns(prev => {
@@ -273,11 +280,150 @@ export function DataProvider({ children }) {
     return tx;
   };
 
+  // ── Emergency Call Flow ────────────────────────────────────────────
+
+  const addEmergencySlot = (slot) => {
+    const s = {
+      id: `ems-${Date.now()}`,
+      astrologerId: slot.astrologerId,
+      astrologerName: getAstrologerName(slot.astrologerId),
+      createdAt: new Date().toISOString(),
+      ...slot
+    };
+    setEmergencySlots(prev => [s, ...prev]);
+    return s;
+  };
+
+  const updateEmergencySlot = (slotId, updates) => {
+    setEmergencySlots(prev => prev.map(s => s.id === slotId ? { ...s, ...updates } : s));
+  };
+
+  const deleteEmergencySlot = (slotId) => {
+    setEmergencySlots(prev => prev.map(s => s.id === slotId ? { ...s, status: 'deleted' } : s));
+  };
+
+  const getAstrologerEmergencySlots = (astrologerId) => {
+    return emergencySlots.filter(s => s.astrologerId === astrologerId && s.status !== 'deleted');
+  };
+
+  const bookEmergencyRequest = (data) => {
+    const slot = emergencySlots.find(s => s.id === data.slotId);
+    const astrologerId = slot ? slot.astrologerId : 'a-1';
+    const astrologerName = slot ? slot.astrologerName : getAstrologerName(astrologerId);
+    const priceCharged = slot ? slot.price : 0;
+    const r = {
+      id: `emr-${Date.now()}`,
+      userId: 'u-1', astrologerId, astrologerName,
+      slotId: data.slotId,
+      callType: data.callType || 'audio',
+      purpose: data.purpose || 'Career',
+      language: data.language || 'English',
+      priceCharged,
+      status: 'requested',
+      createdAt: new Date().toISOString(),
+      ratingWindowExpiresAt: new Date(Date.now() + 2 * 3600000).toISOString()
+    };
+    setEmergencyRequests(prev => [r, ...prev]);
+    return r;
+  };
+
+  const payEmergencyRequest = (requestId) => {
+    const er = emergencyRequests.find(x => x.id === requestId);
+    if (!er) return { error: 'Request not found' };
+    if (parseFloat(wallet.availableBalance) < parseFloat(er.priceCharged)) {
+      return { error: 'Insufficient wallet balance. Please top up.' };
+    }
+    addTransaction('debit', er.priceCharged, `Emergency call payment to ${er.astrologerName}`);
+    setEmergencyRequests(prev => prev.map(x => x.id === requestId ? { ...x, status: 'payment_completed', paymentStatus: 'paid', paidAt: new Date().toISOString() } : x));
+    return { ok: true };
+  };
+
+  const cancelEmergencyRequest = (requestId, reason) => {
+    const er = emergencyRequests.find(x => x.id === requestId);
+    setEmergencyRequests(prev => prev.map(x => x.id === requestId ? {
+      ...x, status: 'cancelled', cancellationReason: reason || 'Cancelled by user',
+      cancelledBy: 'user', cancelledAt: new Date().toISOString()
+    } : x));
+    if (er && er.paymentStatus === 'paid') {
+      addTransaction('credit', er.priceCharged, `Emergency call refund from ${er.astrologerName}`);
+      setEmergencyRequests(prev => prev.map(x => x.id === requestId ? { ...x, status: 'refunded', refundedAt: new Date().toISOString() } : x));
+    }
+  };
+
+  const acceptEmergencyRequest = (requestId) => {
+    setEmergencyRequests(prev => prev.map(x => x.id === requestId ? { ...x, status: 'accepted', acceptedAt: new Date().toISOString() } : x));
+  };
+
+  const rejectEmergencyRequest = (requestId, reason) => {
+    const er = emergencyRequests.find(x => x.id === requestId);
+    setEmergencyRequests(prev => prev.map(x => x.id === requestId ? {
+      ...x, status: 'rejected', rejectionReason: reason || 'Astrologer unavailable',
+      rejectedAt: new Date().toISOString()
+    } : x));
+    if (er && er.paymentStatus === 'paid') {
+      addTransaction('credit', er.priceCharged, `Emergency call refund from ${er.astrologerName}`);
+      setEmergencyRequests(prev => prev.map(x => x.id === requestId ? { ...x, status: 'refunded', refundedAt: new Date().toISOString() } : x));
+    }
+  };
+
+  const startEmergencyCall = (requestId) => {
+    setEmergencyRequests(prev => prev.map(x => x.id === requestId ? { ...x, status: 'call_in_progress', startedAt: new Date().toISOString() } : x));
+  };
+
+  const joinEmergencyCall = (requestId) => {
+    setEmergencyRequests(prev => prev.map(x => x.id === requestId ? {
+      ...x, userAttended: true, userJoinedAt: new Date().toISOString()
+    } : x));
+  };
+
+  const endEmergencyCall = (requestId, endedBy = 'astrologer') => {
+    setEmergencyRequests(prev => prev.map(x => x.id === requestId ? {
+      ...x, status: 'call_completed', endedAt: new Date().toISOString(), endedBy
+    } : x));
+    const er = emergencyRequests.find(x => x.id === requestId);
+    if (er && er.paymentStatus === 'paid') {
+      const commission = Math.round(parseFloat(er.priceCharged) * 0.2 * 100) / 100;
+      const earning = parseFloat(er.priceCharged) - commission;
+      addAstrologerTransaction(er.astrologerId, 'credit', earning, `Emergency call earning (${er.astrologerName})`);
+    }
+  };
+
+  const addEmergencyRating = (requestId, rating, reviewText) => {
+    setEmergencyRequests(prev => prev.map(x => x.id === requestId ? {
+      ...x, rating, reviewText: reviewText || null, ratedAt: new Date().toISOString()
+    } : x));
+    const er = emergencyRequests.find(x => x.id === requestId);
+    if (er) {
+      addRating({ astrologerId: er.astrologerId, astrologerName: er.astrologerName, rating, reviewText: reviewText || null, questionId: null, serviceType: 'emergency' });
+    }
+  };
+
+  const getEmergencyRequestsForAstrologer = (astrologerId) => {
+    return emergencyRequests.filter(r => r.astrologerId === astrologerId);
+  };
+
+  const getEmergencyRecordings = (requestId) => emergencyCallRecordings[requestId] || [];
+
+  const addEmergencyRecording = (requestId, recording) => {
+    setEmergencyCallRecordings(prev => ({
+      ...prev,
+      [requestId]: [recording, ...(prev[requestId] || [])]
+    }));
+  };
+
+  const deleteEmergencyRecording = (requestId, recordingId) => {
+    setEmergencyCallRecordings(prev => ({
+      ...prev,
+      [requestId]: (prev[requestId] || []).filter(r => r.id !== recordingId)
+    }));
+  };
+
   const value = {
     campaigns, purchases, questions, answers, disputes, disputeMessages,
     wallet, walletTransactions, escrowRecords, astrologyProfiles,
     ratings, astroSettingsMap, platformStats, followUpQuestions,
     astrologerWallets, astrologerWalletTxMap,
+    emergencySlots, emergencyRequests, emergencyOptions, emergencyCallRecordings,
     allAstrologers: initialAstrologers, getAstrologerName,
     addPurchase, addTransaction, addQuestion, updateQuestionStatus, addAnswer,
     addDispute, updateDisputeStatus, addDisputeMessage,
@@ -286,6 +432,11 @@ export function DataProvider({ children }) {
     addRating, addFollowUpQuestion, updateAstroSettings, walletTopUp, resolveDispute,
     getAstrologerWallet, getAstrologerWalletTransactions, addAstrologerTransaction,
     acceptDisputeReanswer,
+    addEmergencySlot, updateEmergencySlot, deleteEmergencySlot,
+    bookEmergencyRequest, payEmergencyRequest, cancelEmergencyRequest,
+    acceptEmergencyRequest, rejectEmergencyRequest, startEmergencyCall, joinEmergencyCall, endEmergencyCall,
+    addEmergencyRating, getAstrologerEmergencySlots, getEmergencyRequestsForAstrologer,
+    getEmergencyRecordings, addEmergencyRecording, deleteEmergencyRecording,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

@@ -22,6 +22,15 @@ export const NOTIF_TYPES = {
   RATING_RECEIVED: { icon: '⭐', color: '#f9a826' },
   WALLET_TOPUP: { icon: '💳', color: '#4ade80' },
   DISPUTE_RESPONSE_RECEIVED: { icon: '⚖️', color: '#60a5fa' },
+  EMERGENCY_REQUESTED: { icon: '🚨', color: '#f87171' },
+  EMERGENCY_PAID: { icon: '💳', color: '#f9a826' },
+  EMERGENCY_ACCEPTED: { icon: '✅', color: '#4ade80' },
+  EMERGENCY_REJECTED: { icon: '❌', color: '#f87171' },
+   EMERGENCY_STARTED: { icon: '📞', color: '#60a5fa' },
+   EMERGENCY_USER_ATTENDED: { icon: '🟢', color: '#4ade80' },
+   EMERGENCY_CALL_ENDED: { icon: '🏁', color: '#f87171' },
+   EMERGENCY_COMPLETED: { icon: '🏁', color: '#4ade80' },
+  EMERGENCY_RATING: { icon: '⭐', color: '#f9a826' },
 };
 
 const NOTIF_TYPE_NAV_MAP = {
@@ -42,6 +51,15 @@ const NOTIF_TYPE_NAV_MAP = {
   RATING_RECEIVED: { astrologer: { tab: 'analytics' } },
   WALLET_TOPUP: { user: { tab: 'wallet' } },
   DISPUTE_RESPONSE_RECEIVED: { user: { tab: 'questions' } },
+  EMERGENCY_REQUESTED: { user: { tab: 'emergency' }, astrologer: { tab: 'emergency' } },
+  EMERGENCY_PAID: { user: { tab: 'emergency' }, astrologer: { tab: 'emergency' } },
+  EMERGENCY_ACCEPTED: { user: { tab: 'emergency' } },
+  EMERGENCY_REJECTED: { user: { tab: 'emergency' } },
+   EMERGENCY_STARTED: { user: { tab: 'emergency' } },
+   EMERGENCY_USER_ATTENDED: { astrologer: { tab: 'emergency' } },
+   EMERGENCY_CALL_ENDED: { user: { tab: 'emergency' } },
+   EMERGENCY_COMPLETED: { user: { tab: 'emergency' }, astrologer: { tab: 'emergency' } },
+  EMERGENCY_RATING: { astrologer: { tab: 'emergency' } },
 };
 
 export function getRelativeTime(dateStr) {
